@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.frobino.contra.kernel</groupId>
@@ -28,6 +28,7 @@
   </dependencies>
 
   <build>
+    <!-- To define the plugin version in your parent POM -->
     <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
       <plugins>
         <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
@@ -69,7 +70,7 @@
           <artifactId>maven-project-info-reports-plugin</artifactId>
           <version>3.0.0</version>
         </plugin>
-	<!-- enable mvn java:exec to run the main function -->
+	<!-- enable mvn exec:java to run the main function -->
 	<plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>exec-maven-plugin</artifactId>
@@ -80,5 +81,57 @@
 	</plugin>
       </plugins>
     </pluginManagement>
+    <!-- To use the plugin goals in your POM or parent POM -->
+    <plugins>
+      <!-- enable mvn initialize to install trace compass libs in local m2 -->
+      <plugin>
+  	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-install-plugin</artifactId>
+  	<executions>
+  	  <execution>
+	    <id>ctf-core</id>
+  	    <phase>initialize</phase>
+  	    <goals>
+  	      <goal>install-file</goal>
+ 	    </goals>
+  	    <configuration>
+  	      <file>${project.basedir}/resources/tc-libs/org.eclipse.tracecompass.ctf.core_4.4.0.202312190935.jar</file>
+  	      <groupId>org.eclipse.mytracecompass</groupId>
+  	      <artifactId>org.eclipse.tracecompass.ctf.core</artifactId>
+  	      <version>4.4.0</version>
+  	      <packaging>jar</packaging>
+  	    </configuration>
+  	  </execution>
+  	  <execution>
+	    <id>common-core</id>
+  	    <phase>initialize</phase>
+  	    <goals>
+  	      <goal>install-file</goal>
+ 	    </goals>
+  	    <configuration>
+  	      <file>${project.basedir}/resources/tc-libs/org.eclipse.tracecompass.common.core_5.2.0.202312190935.jar</file>
+  	      <groupId>org.eclipse.mytracecompass</groupId>
+  	      <artifactId>org.eclipse.tracecompass.common.core</artifactId>
+  	      <version>5.2.0</version>
+  	      <packaging>jar</packaging>
+  	    </configuration>
+  	  </execution>
+  	  <execution>
+	    <id>ctf-parser</id>
+  	    <phase>initialize</phase>
+  	    <goals>
+  	      <goal>install-file</goal>
+ 	    </goals>
+  	    <configuration>
+  	      <file>${project.basedir}/resources/tc-libs/org.eclipse.tracecompass.ctf.parser_1.1.1.202312190935.jar</file>
+  	      <groupId>org.eclipse.mytracecompass</groupId>
+  	      <artifactId>org.eclipse.tracecompass.ctf.parser</artifactId>
+  	      <version>1.1.1</version>
+  	      <packaging>jar</packaging>
+  	    </configuration>
+  	  </execution>
+  	</executions>
+      </plugin>
+    </plugins>
   </build>
 </project>
