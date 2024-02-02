@@ -249,6 +249,32 @@
 	  
   	</executions>
       </plugin>
+
+      <!-- Enables the generation of a standalone jar file to execute:
+      java -jar contra-kernel-1.0-SNAPSHOT-jar-with-dependencies.jar -->
+      <plugin>
+  	<artifactId>maven-assembly-plugin</artifactId>
+  	<configuration>
+  	  <archive>
+  	    <manifest>
+  	      <mainClass>org.frobino.contra.kernel.App</mainClass>
+  	    </manifest>
+  	  </archive>
+  	  <descriptorRefs>
+  	    <descriptorRef>jar-with-dependencies</descriptorRef>
+  	  </descriptorRefs>
+  	</configuration>
+  	<executions>
+  	  <execution>
+  	    <id>make-assembly</id>
+  	    <phase>package</phase>
+  	    <goals>
+  	      <goal>single</goal>
+  	    </goals>
+  	  </execution>
+  	</executions>
+      </plugin>
+
     </plugins>
   </build>
 </project>
