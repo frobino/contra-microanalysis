@@ -26,6 +26,15 @@ public class MyStateProvider extends AbstractTmfStateProvider{
 	protected void eventHandle(ITmfEvent event) {
 		System.out.println("Handling event with name: " + event.getName() + " at time: "
 				+ event.getTimestamp().toNanos() + " with content: " + event.getContent());
+		// TODO:
+		// - create a own class implementing ITmfStateSystemBuilder
+		// - create in this state provider a singleton of that object which is returned here
+		//
+		// or (to make it more TC framework friendly):
+		//
+		// - override assignTargetStateSystem(ITmfStateSystemBuilder ssb)
+		// - override getBackEndType so it returns SQL
+		// - override executeAnalysis so it runs the super.executeAnalysis, etc.
 		final ITmfStateSystemBuilder ssb = getStateSystemBuilder();
 		int nameQuark = ssb.getQuarkAbsoluteAndAdd(event.getName());
 		ssb.modifyAttribute(event.getTimestamp().toNanos(), 1, nameQuark);
