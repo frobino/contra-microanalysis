@@ -8,8 +8,11 @@ import org.eclipse.tracecompass.tmf.core.trace.ITmfTrace;
 
 public class MyStateProvider extends AbstractTmfStateProvider{
 
+	private PostgreSSBuilder fSsbPg;
+	
 	public MyStateProvider(ITmfTrace trace) {
 		super(trace, "org.frobino.ctf2json.MyStateProvider");
+		fSsbPg  = new PostgreSSBuilder();
 	}
 
 	@Override
@@ -26,6 +29,7 @@ public class MyStateProvider extends AbstractTmfStateProvider{
 	protected void eventHandle(ITmfEvent event) {
 		System.out.println("Handling event with name: " + event.getName() + " at time: "
 				+ event.getTimestamp().toNanos() + " with content: " + event.getContent());
+		
 		// TODO:
 		// - create a own class implementing ITmfStateSystemBuilder
 		// - create in this state provider a singleton of that object which is returned here
@@ -35,7 +39,9 @@ public class MyStateProvider extends AbstractTmfStateProvider{
 		// - override assignTargetStateSystem(ITmfStateSystemBuilder ssb)
 		// - override getBackEndType so it returns SQL
 		// - override executeAnalysis so it runs the super.executeAnalysis, etc.
-		final ITmfStateSystemBuilder ssb = getStateSystemBuilder();
+
+		// final ITmfStateSystemBuilder ssb = getStateSystemBuilder();
+		final ITmfStateSystemBuilder ssb = fSsbPg;
 		int nameQuark = ssb.getQuarkAbsoluteAndAdd(event.getName());
 		ssb.modifyAttribute(event.getTimestamp().toNanos(), 1, nameQuark);
 		// Yee! We have put something in the SS!
@@ -46,4 +52,10 @@ public class MyStateProvider extends AbstractTmfStateProvider{
 		this.eventHandle(event);
 	}
 	
+	@Override
+	public void done() {
+		super.done();
+		fSsbPg.closeConnection();
+	}
+
 }
