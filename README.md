@@ -21,10 +21,16 @@ java -jar contra-kernel-1.0-SNAPSHOT-jar-with-dependencies.jar
 
 ```
 docker pull postgres:15.3
+# To start a container at localhost:5432
 docker run --name test-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgrespw -e POSTGRES_DB=postgres -d postgres:15.3
+# Check the container local ip address
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' test-postgres
 ```
 
-[bkeeper][bkeeper] seems a fancy UI to browse different dbs.
+[bkeeper][bkeeper] is a fancy UI to browse different dbs.
+It can be used to connect ot the postgres db configured in the previous
+steps. Use the user,pwd configured above, the ip address returned by
+```docker inspect```, and port 5432.
 
 ## NOTEs
 
