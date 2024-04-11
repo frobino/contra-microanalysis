@@ -1,7 +1,9 @@
 package org.frobino.contra.kernel;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.tracecompass.statesystem.core.ITmfStateSystemBuilder;
@@ -21,6 +23,7 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
 	private static String INTERVALS_TABLE_NAME = "intervals";
 	private int fNextQuark = 1;
 	private BiMap<Integer, String> fQuarkAndAttribute = HashBiMap.create();
+	private Map<Integer, Integer> fQuarkToLastUpdateTime = new HashMap<>();
 	
 	
 	public PostgreSSBuilder() {
@@ -224,13 +227,26 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
 		return quark;
 	}
 
-	@Override
-	public void modifyAttribute(long t, Object value, int attributeQuark) throws StateValueTypeException {
-		// FIXME: hardcoded to int
-		addColumnIfNotExists(INTERVALS_TABLE_NAME, Integer.toString(attributeQuark), "int");
-		String sql = generateInsertSpecificValueSql(INTERVALS_TABLE_NAME, Integer.toString(attributeQuark), 1010);
-		executeUpdate(sql);
-	}
+    @Override
+    public void modifyAttribute(long t, Object value, int attributeQuark) throws StateValueTypeException {
+        // FIXME: column type is hardcoded to int. It should be based on the type of the value object
+        if (addColumnIfNotExists(INTERVALS_TABLE_NAME, Integer.toString(attributeQuark), "int")) {
+            // It is the 1st time we insert this attribute/quark (column) in the DB
+            fQuarkToLastUpdateTime.put(attributeQuark, (int) t);
+            String sql = generateInsertSpecificValueSql(INTERVALS_TABLE_NAME, Integer.toString(attributeQuark), 1010, 0, t);
+            executeUpdate(sql);
+        } else {
+            /*
+             * The attribute/quark (column) is already there. We need to:
+             * 
+             * TODO
+             * 
+             * - check if that attribute/quark has already someting "on-top"
+             *   - if YES: then close/insert that interval and then put the current value "on-top" (cached)
+             *   - if NO: put the current value "on-top" (cached)
+             */
+        }
+    }
 
 	@Override
 	public ITmfStateValue popAttribute(long arg0, int arg1) throws StateValueTypeException {

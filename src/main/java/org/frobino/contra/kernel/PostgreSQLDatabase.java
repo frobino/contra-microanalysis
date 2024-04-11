@@ -61,8 +61,13 @@ public class PostgreSQLDatabase {
         }
     }
 
-    // Method to add a column to a table if it doesn't exist
-    public void addColumnIfNotExists(String tableName, String columnName, String columnType) {
+    /**
+     * Method to add a column to a table if it doesn't exist.
+     * 
+     * @return true if the column was added in the db.
+     */
+    public boolean addColumnIfNotExists(String tableName, String columnName, String columnType) {
+        boolean columnAdded = false;
         try {
             DatabaseMetaData metaData = connection.getMetaData();
             ResultSet resultSet = metaData.getColumns(null, null, tableName, columnName);
@@ -72,11 +77,13 @@ public class PostgreSQLDatabase {
                 statement.executeUpdate(sql);
                 System.out.println("Column '" + columnName + "' added to table '" + tableName + "' successfully.");
                 statement.close();
+                columnAdded = true;
             }
             resultSet.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        return columnAdded;
     }
     
     public boolean columnExists(String tableName, String columnName) {
@@ -116,14 +123,15 @@ public class PostgreSQLDatabase {
             statement.close();
         }
     }
-    
-    public static String generateInsertSpecificValueSql(String tableName, String columnName, Object value) {
+
+    public static String generateInsertSpecificValueSql(String tableName, String columnName, Object value, long startTime, long endTime) {
         StringBuilder sqlBuilder = new StringBuilder("INSERT INTO ").append(tableName).append(" (");
         StringBuilder valuesBuilder = new StringBuilder(") VALUES (");
 
-        sqlBuilder.append("\"" + columnName + "\"");
-        valuesBuilder.append(value);
-        
+        sqlBuilder.append("\"" + "duration" + "\"" + ", " + "\"" + columnName + "\"");
+        // valuesBuilder.append("int8range(1,2), " + value);
+        valuesBuilder.append("int8range(" + startTime + "," + ++endTime + "), " + value);
+
         return sqlBuilder.append(valuesBuilder).append(")").toString();
     }
     
