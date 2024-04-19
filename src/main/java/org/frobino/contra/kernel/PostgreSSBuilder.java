@@ -13,6 +13,7 @@ import org.eclipse.tracecompass.statesystem.core.exceptions.StateValueTypeExcept
 import org.eclipse.tracecompass.statesystem.core.exceptions.TimeRangeException;
 import org.eclipse.tracecompass.statesystem.core.interval.ITmfStateInterval;
 import org.eclipse.tracecompass.statesystem.core.statevalue.ITmfStateValue;
+import org.eclipse.tracecompass.statesystem.core.statevalue.TmfStateValue;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -23,7 +24,8 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
 	private static String INTERVALS_TABLE_NAME = "intervals";
 	private int fNextQuark = 1;
 	private BiMap<Integer, String> fQuarkAndAttribute = HashBiMap.create();
-	private Map<Integer, Integer> fQuarkToLastUpdateTime = new HashMap<>();
+	private Map<Integer, Long> fQuarkToOngoingTime = new HashMap<>();
+    private Map<Integer, ITmfStateValue> fQuarkToOngoingStateValue = new HashMap<>();
 	
 	
 	public PostgreSSBuilder() {
@@ -229,12 +231,16 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
 
     @Override
     public void modifyAttribute(long t, Object value, int attributeQuark) throws StateValueTypeException {
+   
+        ITmfStateValue stateValue = TmfStateValue.newValue(value);
+        
         // FIXME: column type is hardcoded to int. It should be based on the type of the value object
         if (addColumnIfNotExists(INTERVALS_TABLE_NAME, Integer.toString(attributeQuark), "int")) {
             // It is the 1st time we insert this attribute/quark (column) in the DB
-            fQuarkToLastUpdateTime.put(attributeQuark, (int) t);
-            String sql = generateInsertSpecificValueSql(INTERVALS_TABLE_NAME, Integer.toString(attributeQuark), 1010, 0, t);
-            executeUpdate(sql);
+            fQuarkToOngoingTime.put(attributeQuark, t);
+            fQuarkToOngoingStateValue.put(attributeQuark, stateValue);
+            // String sql = generateInsertSpecificValueSql(INTERVALS_TABLE_NAME, Integer.toString(attributeQuark), value, 0, t);
+            // executeUpdate(sql);
         } else {
             /*
              * The attribute/quark (column) is already there. We need to:
@@ -245,6 +251,22 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
              *   - if YES: then close/insert that interval and then put the current value "on-top" (cached)
              *   - if NO: put the current value "on-top" (cached)
              */
+//            if (fQuarkToOngoingStateValue.containsKey(attributeQuark) &&
+//                    (fQuarkToOngoingStateValue.get(attributeQuark). != null )) {
+//                // put the current value "on-top" (cached)
+//                fQuarkToOngoingTime.put(attributeQuark, (int) t);
+//                fQuarkToOngoingStateValue.put(attributeQuark, stateValue);
+//            } else {
+                // close/insert the interval
+                ITmfStateValue ongoingStateValue = fQuarkToOngoingStateValue.get(attributeQuark);
+                long ongoingStateStartTime = fQuarkToOngoingTime.get(attributeQuark);
+                String sql = generateInsertSpecificValueSql(INTERVALS_TABLE_NAME, Integer.toString(attributeQuark), ongoingStateValue.unboxValue(), ongoingStateStartTime, t);
+                executeUpdate(sql);
+                
+                // put the current value "on-top" (cached)
+                fQuarkToOngoingTime.put(attributeQuark, t);
+                fQuarkToOngoingStateValue.put(attributeQuark, stateValue);
+//            }
         }
     }
 

@@ -43,7 +43,7 @@ public class MyStateProvider extends AbstractTmfStateProvider{
 		// final ITmfStateSystemBuilder ssb = getStateSystemBuilder();
 		final ITmfStateSystemBuilder ssb = fSsbPg;
 		int nameQuark = ssb.getQuarkAbsoluteAndAdd(event.getName());
-		ssb.modifyAttribute(event.getTimestamp().toNanos(), 1, nameQuark);
+		ssb.modifyAttribute(event.getTimestamp().toNanos(), 1010, nameQuark);
 		// Yee! We have put something in the SS!
 	}
 
