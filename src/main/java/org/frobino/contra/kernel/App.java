@@ -8,6 +8,8 @@ import org.eclipse.tracecompass.statesystem.core.ITmfStateSystemBuilder;
 import org.eclipse.tracecompass.statesystem.core.StateSystemFactory;
 import org.eclipse.tracecompass.statesystem.core.backend.IStateHistoryBackend;
 import org.eclipse.tracecompass.statesystem.core.backend.StateHistoryBackendFactory;
+import org.eclipse.tracecompass.tmf.core.event.ITmfEvent;
+import org.eclipse.tracecompass.tmf.core.exceptions.TmfTraceException;
 import org.eclipse.tracecompass.tmf.ctf.core.event.CtfTmfEvent;
 import org.eclipse.tracecompass.tmf.ctf.core.event.CtfTmfEventFactory;
 import org.eclipse.tracecompass.tmf.ctf.core.trace.CtfTmfTrace;
@@ -42,7 +44,28 @@ public class App {
 			trace = new CTFTrace(lttngUstTracePath);
 			CtfTmfEventFactory factory = CtfTmfEventFactory.instance();
 			traceReader = new CTFTraceReader(trace);
-			CtfTmfTrace tmfTrace = new CtfTmfTrace();
+			
+            /*
+             * To use the trace in the Trace Compass framework, it is needed to "bridge"
+             * CtfTrace to CtfTmfTrace
+             */
+            CtfTmfTrace tmfTrace = new CtfTmfTrace();
+            try {
+                /*
+                 * This init is needed to enable tmf to create a CtfTmfEvent with correct timing
+                 * 
+                 * (see CtfTmfEvent e = factory.createEvent)
+                 * 
+                 * TODO: check if it is really needed to initialize fTrace in
+                 * CtfTmfTrace.initTrace, or if it can be initialized in the constructor
+                 */
+                tmfTrace.initTrace(null, lttngUstTracePath, ITmfEvent.class);
+            } catch (TmfTraceException e1) {
+                // Issues when initializing tmfTrace, expecting problems when creating the CtfTmfEvent
+                e1.printStackTrace();
+            }
+	        
+			
 			// Configure state provider, including State System
 			MyStateProvider sp = new MyStateProvider(tmfTrace);
 			IStateHistoryBackend backend = StateHistoryBackendFactory.createInMemoryBackend("Test", 0L);
