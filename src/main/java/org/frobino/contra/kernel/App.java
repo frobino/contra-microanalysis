@@ -17,31 +17,18 @@ import org.eclipse.tracecompass.tmf.ctf.core.trace.CtfTmfTrace;
 public class App {
 	public static void main(String[] args) {
 	    final String lttngUstTracePath = "resources/traces/lttng-ust";
-	    CTFTrace trace;
-	    CTFTraceReader traceReader;
-	    
-	    try {
-			trace = new CTFTrace(lttngUstTracePath);
-			traceReader = new CTFTraceReader(trace);
-			int counter = 0;
-			while (traceReader.hasMoreEvents()) {
-				System.out.println("Event " + counter + ":");
-				System.out.println("Event name: " + traceReader.getCurrentEventDef().getDeclaration().getName());
-				System.out.println("Timestamp: " + traceReader.getCurrentEventDef().getTimestamp());
-				System.out.println("Events fields: " + traceReader.getCurrentEventDef().getFields());
-				System.out.println();
-				traceReader.advance();
-				counter++;
-			}
-			// Close the reader
-			traceReader.close();
-		} catch (CTFException e) {
-			// Issues when creating new CTFTrace
-			e.printStackTrace();
-		}
 
+	    readTrace(lttngUstTracePath);
+
+        interpretTraceWithMyStateProvider(lttngUstTracePath);
+	    
+	}
+
+    private static void interpretTraceWithMyStateProvider(final String tracePath) {
+        CTFTrace trace;
+        CTFTraceReader traceReader;
 		try {
-			trace = new CTFTrace(lttngUstTracePath);
+			trace = new CTFTrace(tracePath);
 			CtfTmfEventFactory factory = CtfTmfEventFactory.instance();
 			traceReader = new CTFTraceReader(trace);
 			
@@ -59,7 +46,7 @@ public class App {
                  * TODO: check if it is really needed to initialize fTrace in
                  * CtfTmfTrace.initTrace, or if it can be initialized in the constructor
                  */
-                tmfTrace.initTrace(null, lttngUstTracePath, ITmfEvent.class);
+                tmfTrace.initTrace(null, tracePath, ITmfEvent.class);
             } catch (TmfTraceException e1) {
                 // Issues when initializing tmfTrace, expecting problems when creating the CtfTmfEvent
                 e1.printStackTrace();
@@ -84,6 +71,34 @@ public class App {
 			// Issues when creating new CTFTrace
 			e.printStackTrace();
 		}
+    }
+
+    /*
+     * Simple method to read a CTF trace and use the CTF parser of trace compass to
+     * interpret and print out
+     */
+    private static void readTrace(final String tracePath) {
+        CTFTrace trace;
+	    CTFTraceReader traceReader;
 	    
-	}
+	    try {
+			trace = new CTFTrace(tracePath);
+			traceReader = new CTFTraceReader(trace);
+			int counter = 0;
+			while (traceReader.hasMoreEvents()) {
+				System.out.println("Event " + counter + ":");
+				System.out.println("Event name: " + traceReader.getCurrentEventDef().getDeclaration().getName());
+				System.out.println("Timestamp: " + traceReader.getCurrentEventDef().getTimestamp());
+				System.out.println("Events fields: " + traceReader.getCurrentEventDef().getFields());
+				System.out.println();
+				traceReader.advance();
+				counter++;
+			}
+			// Close the reader
+			traceReader.close();
+		} catch (CTFException e) {
+			// Issues when creating new CTFTrace
+			e.printStackTrace();
+		}
+    }
 }
