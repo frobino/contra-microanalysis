@@ -1,5 +1,6 @@
 package org.frobino.contra.kernel;
 
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.tracecompass.statesystem.core.ITmfStateSystemBuilder;
 import org.eclipse.tracecompass.tmf.core.event.ITmfEvent;
 import org.eclipse.tracecompass.tmf.core.statesystem.AbstractTmfStateProvider;
@@ -24,6 +25,11 @@ public class MyStateProvider extends AbstractTmfStateProvider{
 	public int getVersion() {
 		return 0;
 	}
+	
+	@Override
+	protected @Nullable ITmfStateSystemBuilder getStateSystemBuilder() {
+	    return fSsbPg;
+	}
 
 	@Override
 	protected void eventHandle(ITmfEvent event) {
@@ -40,8 +46,7 @@ public class MyStateProvider extends AbstractTmfStateProvider{
 		// - override getBackEndType so it returns SQL
 		// - override executeAnalysis so it runs the super.executeAnalysis, etc.
 
-		// final ITmfStateSystemBuilder ssb = getStateSystemBuilder();
-		final ITmfStateSystemBuilder ssb = fSsbPg;
+		final ITmfStateSystemBuilder ssb = getStateSystemBuilder();
 		int nameQuark = ssb.getQuarkAbsoluteAndAdd(event.getName());
 		ssb.modifyAttribute(event.getTimestamp().toNanos(), 1010, nameQuark);
 		// Yee! We have put something in the SS!
