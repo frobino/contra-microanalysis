@@ -232,13 +232,17 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
     public void modifyAttribute(long t, Object value, int attributeQuark) throws StateValueTypeException {
    
         ITmfStateValue stateValue = TmfStateValue.newValue(value);
-        String columnType = "int";
+        String columnType = null;
+        // FIXME: the case below is just to make it work now
         switch (stateValue.getType()) {
         case INTEGER:
+            columnType = "int";
             break;
         case LONG:
+            columnType = "int";
             break;
         case DOUBLE:
+            columnType = "int";
             break;
         case STRING:
             columnType = "text";
@@ -251,8 +255,7 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
             break;
         }
         
-        // FIXME: column type is hardcoded to int. It should be based on the type of the value object
-        if (addColumnIfNotExists(INTERVALS_TABLE_NAME, Integer.toString(attributeQuark), columnType)) {
+        if ((columnType != null) &&  addColumnIfNotExists(INTERVALS_TABLE_NAME, Integer.toString(attributeQuark), columnType)) {
             // It is the 1st time we insert this attribute/quark (column) in the DB
             fQuarkToOngoingState.put(attributeQuark, new Pair<Long, ITmfStateValue>(t, stateValue));
         } else {
@@ -262,12 +265,11 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
              *   - if YES: then close/insert that interval and then put the current value "on-top" (cached)
              *   - if NO: put the current value "on-top" (cached)
              */
-
-            Pair<Long, ITmfStateValue> state = fQuarkToOngoingState.get(attributeQuark);
-            if (state != null) {
+            Pair<Long, ITmfStateValue> ongoingState = fQuarkToOngoingState.getOrDefault(attributeQuark, new Pair<Long, ITmfStateValue>(0L,TmfStateValue.newValue(null)));
+            ITmfStateValue ongoingStateValue = ongoingState.getSecond();
+            if (!ongoingStateValue.isNull()) {
                 // close/insert the interval
-                ITmfStateValue ongoingStateValue = state.getSecond();
-                long ongoingStateStartTime = state.getFirst();
+                long ongoingStateStartTime = ongoingState.getFirst();
                 String sql = generateInsertSpecificValueSql(INTERVALS_TABLE_NAME, Integer.toString(attributeQuark), ongoingStateValue.unboxValue(), ongoingStateStartTime, t-1);
                 executeUpdate(sql);
             }

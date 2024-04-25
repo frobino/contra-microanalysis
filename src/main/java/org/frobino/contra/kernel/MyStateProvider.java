@@ -35,7 +35,7 @@ public class MyStateProvider extends AbstractTmfStateProvider{
 	protected void eventHandle(ITmfEvent event) {
 		System.out.println("Handling event with name: " + event.getName() + " at time: "
 				+ event.getTimestamp().toNanos() + " with content: " + event.getContent());
-		
+
 		// TODO:
 		// - create a own class implementing ITmfStateSystemBuilder
 		// - create in this state provider a singleton of that object which is returned here
@@ -47,8 +47,14 @@ public class MyStateProvider extends AbstractTmfStateProvider{
 		// - override executeAnalysis so it runs the super.executeAnalysis, etc.
 
 		final ITmfStateSystemBuilder ssb = getStateSystemBuilder();
-		int nameQuark = ssb.getQuarkAbsoluteAndAdd(event.getName());
-		ssb.modifyAttribute(event.getTimestamp().toNanos(), 1010, nameQuark);
+		String cpuNr = event.getContent().getField("context.cpu_id").getFormattedValue();
+		int cpuQuark = ssb.getQuarkAbsoluteAndAdd(cpuNr);
+
+        if (event.getContent().getField("my_string_field").getFormattedValue().contains("starts")) {
+            ssb.modifyAttribute(event.getTimestamp().toNanos(), 1, cpuQuark);
+        } else if (event.getContent().getField("my_string_field").getFormattedValue().contains("ends")) {
+            ssb.modifyAttribute(event.getTimestamp().toNanos(), null, cpuQuark);
+        }
 		// Yee! We have put something in the SS!
 	}
 
