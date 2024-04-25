@@ -14,6 +14,7 @@ import org.eclipse.tracecompass.statesystem.core.exceptions.TimeRangeException;
 import org.eclipse.tracecompass.statesystem.core.interval.ITmfStateInterval;
 import org.eclipse.tracecompass.statesystem.core.statevalue.ITmfStateValue;
 import org.eclipse.tracecompass.statesystem.core.statevalue.TmfStateValue;
+import org.eclipse.tracecompass.tmf.core.util.Pair;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
@@ -24,9 +25,7 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
 	private static String INTERVALS_TABLE_NAME = "intervals";
 	private int fNextQuark = 1;
 	private BiMap<Integer, String> fQuarkAndAttribute = HashBiMap.create();
-	private Map<Integer, Long> fQuarkToOngoingTime = new HashMap<>();
-    private Map<Integer, ITmfStateValue> fQuarkToOngoingStateValue = new HashMap<>();
-	
+    private Map<Integer, Pair<Long, ITmfStateValue>> fQuarkToOngoingState = new HashMap<>();
 	
 	public PostgreSSBuilder() {
 		// Create the needed tables:
@@ -233,40 +232,48 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
     public void modifyAttribute(long t, Object value, int attributeQuark) throws StateValueTypeException {
    
         ITmfStateValue stateValue = TmfStateValue.newValue(value);
+        String columnType = "int";
+        switch (stateValue.getType()) {
+        case INTEGER:
+            break;
+        case LONG:
+            break;
+        case DOUBLE:
+            break;
+        case STRING:
+            columnType = "text";
+            break;
+        case CUSTOM:
+            break;
+        case NULL:
+            break;
+        default:
+            break;
+        }
         
         // FIXME: column type is hardcoded to int. It should be based on the type of the value object
-        if (addColumnIfNotExists(INTERVALS_TABLE_NAME, Integer.toString(attributeQuark), "int")) {
+        if (addColumnIfNotExists(INTERVALS_TABLE_NAME, Integer.toString(attributeQuark), columnType)) {
             // It is the 1st time we insert this attribute/quark (column) in the DB
-            fQuarkToOngoingTime.put(attributeQuark, t);
-            fQuarkToOngoingStateValue.put(attributeQuark, stateValue);
-            // String sql = generateInsertSpecificValueSql(INTERVALS_TABLE_NAME, Integer.toString(attributeQuark), value, 0, t);
-            // executeUpdate(sql);
+            fQuarkToOngoingState.put(attributeQuark, new Pair<Long, ITmfStateValue>(t, stateValue));
         } else {
             /*
              * The attribute/quark (column) is already there. We need to:
-             * 
-             * TODO
-             * 
              * - check if that attribute/quark has already someting "on-top"
              *   - if YES: then close/insert that interval and then put the current value "on-top" (cached)
              *   - if NO: put the current value "on-top" (cached)
              */
-//            if (fQuarkToOngoingStateValue.containsKey(attributeQuark) &&
-//                    (fQuarkToOngoingStateValue.get(attributeQuark). != null )) {
-//                // put the current value "on-top" (cached)
-//                fQuarkToOngoingTime.put(attributeQuark, (int) t);
-//                fQuarkToOngoingStateValue.put(attributeQuark, stateValue);
-//            } else {
+
+            Pair<Long, ITmfStateValue> state = fQuarkToOngoingState.get(attributeQuark);
+            if (state != null) {
                 // close/insert the interval
-                ITmfStateValue ongoingStateValue = fQuarkToOngoingStateValue.get(attributeQuark);
-                long ongoingStateStartTime = fQuarkToOngoingTime.get(attributeQuark);
-                String sql = generateInsertSpecificValueSql(INTERVALS_TABLE_NAME, Integer.toString(attributeQuark), ongoingStateValue.unboxValue(), ongoingStateStartTime, t);
+                ITmfStateValue ongoingStateValue = state.getSecond();
+                long ongoingStateStartTime = state.getFirst();
+                String sql = generateInsertSpecificValueSql(INTERVALS_TABLE_NAME, Integer.toString(attributeQuark), ongoingStateValue.unboxValue(), ongoingStateStartTime, t-1);
                 executeUpdate(sql);
-                
-                // put the current value "on-top" (cached)
-                fQuarkToOngoingTime.put(attributeQuark, t);
-                fQuarkToOngoingStateValue.put(attributeQuark, stateValue);
-//            }
+            }
+            
+            // put the current value "on-top" (cached)
+            fQuarkToOngoingState.put(attributeQuark, new Pair<Long, ITmfStateValue>(t, stateValue));
         }
     }
 
