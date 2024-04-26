@@ -1,9 +1,14 @@
 package org.frobino.contra.kernel;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.tracecompass.statesystem.core.ITmfStateSystemBuilder;
@@ -24,6 +29,7 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
 	private static String QUARK_ATTR_TABLE_NAME = "quark_and_attribute";
 	private static String INTERVALS_TABLE_NAME = "intervals";
 	private int fNextQuark = 1;
+	private long fLastUpdateTime = 0L;
 	private BiMap<Integer, String> fQuarkAndAttribute = HashBiMap.create();
     private Map<Integer, Pair<Long, ITmfStateValue>> fQuarkToOngoingState = new HashMap<>();
 	
@@ -53,8 +59,7 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
 
 	@Override
 	public long getCurrentEndTime() {
-		// TODO Auto-generated method stub
-		return 0;
+		return fLastUpdateTime;
 	}
 
 	@Override
@@ -102,6 +107,8 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
 	@Override
 	public @NonNull List<@NonNull Integer> getQuarks(String... arg0) {
 		// TODO Auto-generated method stub
+	    FIXME
+	    
 		return null;
 	}
 
@@ -124,9 +131,34 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
 	}
 
 	@Override
-	public @NonNull List<@NonNull Integer> getSubAttributes(int arg0, boolean arg1) {
-		// TODO Auto-generated method stub
-		return null;
+	public @NonNull List<@NonNull Integer> getSubAttributes(int quark, boolean recursive) {
+	    String attribute = fQuarkAndAttribute.get(quark);
+	    List<String> subAttributes = fQuarkAndAttribute.values()
+	            .stream()
+                .filter(s -> s.startsWith(attribute))
+                .collect(Collectors.toList());
+
+	    if (!recursive) {
+	        Set<String> nonRecursivesubAttributes = new HashSet<>();
+	        for (String subattribute : subAttributes) {
+	            int attributeLastIndex = subattribute.indexOf(attribute) + attribute.length();
+                String sa = subattribute.substring(attributeLastIndex);
+                if (sa != "") {
+                    System.out.println(sa);
+                    String[] sarray = sa.split("/");
+                    nonRecursivesubAttributes.add(attribute + "/" + sarray[1]);
+                    System.out.println(sa);
+                }
+	        }
+	        subAttributes = nonRecursivesubAttributes.stream().collect(Collectors.toList());
+	    }
+	    
+	    List<Integer> quarksForSubattributes = new ArrayList<>();
+	    for (String subAttribute : subAttributes) {
+	        quarksForSubattributes.add(fQuarkAndAttribute.inverse().get(subAttribute));
+	    }
+	        
+	    return quarksForSubattributes;
 	}
 
 	@Override
@@ -176,8 +208,11 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
 
 	@Override
 	public @NonNull ITmfStateValue queryOngoingState(int arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	    Pair<Long, ITmfStateValue> state = fQuarkToOngoingState.get(arg0);
+	    if (state == null) {
+	        return TmfStateValue.newValue(null);
+	    }
+	    return state.getSecond();
 	}
 
 	@Override
@@ -199,9 +234,21 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
 	}
 
 	@Override
-	public void closeHistory(long arg0) {
-		// TODO Auto-generated method stub
-		
+	public void closeHistory(long t) {
+		// TODO: If anything to be pushed to the DB, do it now
+	    
+	    // TODO: Push the "quark to attribute" table
+	    Set<String> a = new HashSet<String>(); 
+        a.addAll(Arrays.asList(new String[] { "quark", "attribute"}));
+        
+        for (Map.Entry<Integer,String> entry : fQuarkAndAttribute.entrySet()) {
+            List<Object> l = new ArrayList<>();
+            l.add(entry.getKey());
+            l.add(entry.getValue());
+            String sql = generateInsertSql(QUARK_ATTR_TABLE_NAME, a, l);
+            executeUpdate(sql);
+        }
+        
 	}
 
 	@Override
@@ -230,7 +277,7 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
 
     @Override
     public void modifyAttribute(long t, Object value, int attributeQuark) throws StateValueTypeException {
-   
+        fLastUpdateTime = t;
         ITmfStateValue stateValue = TmfStateValue.newValue(value);
         String columnType = null;
         // FIXME: the case below is just to make it work now

@@ -1,6 +1,7 @@
 package org.frobino.contra.kernel;
 
 import java.sql.*;
+import java.util.List;
 import java.util.Set;
 
 public class PostgreSQLDatabase {
@@ -135,15 +136,15 @@ public class PostgreSQLDatabase {
         return sqlBuilder.append(valuesBuilder).append(")").toString();
     }
     
-    public static String generateInsertSql(String tableName, Set<String> columns) {
+    public static String generateInsertSql(String tableName, Set<String> columns, List<Object> values) {
         StringBuilder sqlBuilder = new StringBuilder("INSERT INTO ").append(tableName).append(" (");
         StringBuilder valuesBuilder = new StringBuilder(") VALUES (");
-        
+
         int columnCount = columns.size();
         int counter = 0;
         for (String column : columns) {
             sqlBuilder.append(column);
-            valuesBuilder.append("?");
+            valuesBuilder.append(values.get(counter));
             if (++counter < columnCount) {
                 sqlBuilder.append(", ");
                 valuesBuilder.append(", ");

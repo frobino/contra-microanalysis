@@ -66,7 +66,14 @@ public class MyStateProvider extends AbstractTmfStateProvider{
 	@Override
 	public void done() {
 		super.done();
-		fSsbPg.closeConnection();
+		fSsbPg.closeHistory(fSsbPg.getCurrentEndTime());
+	}
+	
+	@Override
+	public void dispose() {
+	    // TODO Auto-generated method stub
+	    super.dispose();
+        fSsbPg.closeConnection();
 	}
 
 }
