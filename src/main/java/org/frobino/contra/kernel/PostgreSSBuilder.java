@@ -8,6 +8,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNull;
@@ -89,6 +91,7 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
 	@Override
 	public int getParentAttributeQuark(int arg0) {
 		// TODO Auto-generated method stub
+	    // FIXME?
 		return 0;
 	}
 
@@ -105,11 +108,38 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
 	}
 
 	@Override
-	public @NonNull List<@NonNull Integer> getQuarks(String... arg0) {
+	public @NonNull List<@NonNull Integer> getQuarks(String... pattern) {
 		// TODO Auto-generated method stub
-	    FIXME
 	    
-		return null;
+        Set<String> stringList = fQuarkAndAttribute.values();
+
+        // Define a regex pattern
+        String regex = "";
+        for (String p : pattern) {
+            if (p == "*") {
+                p = "A-Za-z0-9";
+            }
+            if (regex.isEmpty()) {
+                regex = regex.concat("[" + p + "]+");
+            } else {
+                regex = regex.concat("\\/[" + p + "]+");
+            }
+        }
+
+        // Compile the regex pattern
+        Pattern realPattern = Pattern.compile(regex);
+
+        // Iterate through the list and filter strings matching the regex
+        List<Integer> matchedQuarks = new ArrayList<>();
+        for (String str : stringList) {
+            Matcher matcher = realPattern.matcher(str);
+            if (matcher.matches()) { // Check if the entire string matches the regex
+                int matchedQuark = fQuarkAndAttribute.inverse().get(str);
+                matchedQuarks.add(matchedQuark);
+            }
+        }
+
+		return matchedQuarks;
 	}
 
 	@Override

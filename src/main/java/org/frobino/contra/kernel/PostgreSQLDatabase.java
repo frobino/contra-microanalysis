@@ -130,8 +130,11 @@ public class PostgreSQLDatabase {
         StringBuilder valuesBuilder = new StringBuilder(") VALUES (");
 
         sqlBuilder.append("\"" + "duration" + "\"" + ", " + "\"" + columnName + "\"");
-        // valuesBuilder.append("int8range(1,2), " + value);
-        valuesBuilder.append("int8range(" + startTime + "," + ++endTime + "), " + value);
+        if (value instanceof String) {
+            valuesBuilder.append("int8range(" + startTime + "," + ++endTime + "), " + "'" + value + "'");
+        } else {
+            valuesBuilder.append("int8range(" + startTime + "," + ++endTime + "), " + value);
+        }
 
         return sqlBuilder.append(valuesBuilder).append(")").toString();
     }
