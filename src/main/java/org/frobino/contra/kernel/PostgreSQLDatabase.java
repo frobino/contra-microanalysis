@@ -4,6 +4,8 @@ import java.sql.*;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.tracecompass.tmf.core.util.Pair;
+
 public class PostgreSQLDatabase {
     private Connection connection;
 
@@ -124,30 +126,26 @@ public class PostgreSQLDatabase {
             statement.close();
         }
     }
-
-    public static String generateInsertSpecificValueSql(String tableName, String columnName, Object value, long startTime, long endTime) {
-        StringBuilder sqlBuilder = new StringBuilder("INSERT INTO ").append(tableName).append(" (");
-        StringBuilder valuesBuilder = new StringBuilder(") VALUES (");
-
-        sqlBuilder.append("\"" + "duration" + "\"" + ", " + "\"" + columnName + "\"");
-        if (value instanceof String) {
-            valuesBuilder.append("int8range(" + startTime + "," + ++endTime + "), " + "'" + value + "'");
-        } else {
-            valuesBuilder.append("int8range(" + startTime + "," + ++endTime + "), " + value);
-        }
-
-        return sqlBuilder.append(valuesBuilder).append(")").toString();
-    }
     
-    public static String generateInsertSql(String tableName, Set<String> columns, List<Object> values) {
+    public static String generateInsertSql(String tableName, List<String> columns, List<Object> values) {
         StringBuilder sqlBuilder = new StringBuilder("INSERT INTO ").append(tableName).append(" (");
         StringBuilder valuesBuilder = new StringBuilder(") VALUES (");
 
         int columnCount = columns.size();
         int counter = 0;
         for (String column : columns) {
-            sqlBuilder.append(column);
-            valuesBuilder.append(values.get(counter));
+            sqlBuilder.append("\"" + column + "\"");
+            Object valueToInsert = values.get(counter);
+            if (valueToInsert instanceof Pair<?, ?>) {
+                Pair<Long, Long> range = (Pair<Long, Long>) valueToInsert;
+                // we are trying to insert a range
+                valuesBuilder.append("int8range(" + range.getFirst() + "," + (range.getSecond() + 1) + ")");
+            } else if (valueToInsert instanceof String){
+                valuesBuilder.append("'" + values.get(counter) + "'");
+            } else {
+                valuesBuilder.append(values.get(counter));
+            }
+            
             if (++counter < columnCount) {
                 sqlBuilder.append(", ");
                 valuesBuilder.append(", ");

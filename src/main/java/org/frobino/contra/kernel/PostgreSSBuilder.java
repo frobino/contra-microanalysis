@@ -268,8 +268,7 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
 		// TODO: If anything to be pushed to the DB, do it now
 	    
 	    // TODO: Push the "quark to attribute" table
-	    Set<String> a = new HashSet<String>(); 
-        a.addAll(Arrays.asList(new String[] { "quark", "attribute"}));
+	    List<String> a = Arrays.asList(new String[] { "quark", "attribute"});
         
         for (Map.Entry<Integer,String> entry : fQuarkAndAttribute.entrySet()) {
             List<Object> l = new ArrayList<>();
@@ -347,7 +346,10 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
             if (!ongoingStateValue.isNull()) {
                 // close/insert the interval
                 long ongoingStateStartTime = ongoingState.getFirst();
-                String sql = generateInsertSpecificValueSql(INTERVALS_TABLE_NAME, Integer.toString(attributeQuark), ongoingStateValue.unboxValue(), ongoingStateStartTime, t-1);
+                Pair<Long, Long> range = new Pair<Long, Long>(ongoingStateStartTime, t-1);
+                List<String> columns = Arrays.asList("duration", Integer.toString(attributeQuark));
+                List<Object> values = Arrays.asList(range, ongoingStateValue.unboxValue());
+                String sql = generateInsertSql(INTERVALS_TABLE_NAME, columns, values);
                 executeUpdate(sql);
             }
             
