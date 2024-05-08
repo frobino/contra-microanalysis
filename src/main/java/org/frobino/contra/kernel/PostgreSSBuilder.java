@@ -30,6 +30,7 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
 
 	private static String QUARK_ATTR_TABLE_NAME = "quark_and_attribute";
 	private static String INTERVALS_V1_TABLE_NAME = "intervalsV1";
+	private static String INTERVALS_V2_TABLE_NAME = "intervalsV2";
 	private int fNextQuark = 1;
 	private long fLastUpdateTime = 0L;
 	private BiMap<Integer, String> fQuarkAndAttribute = HashBiMap.create();
@@ -38,9 +39,10 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
 	public PostgreSSBuilder() {
 		// Create the needed tables:
 		// 1) Quark, Attribute
-		// 2) Timerange, ...Quark
 		this.createTable(QUARK_ATTR_TABLE_NAME, "quark int, attribute varchar(255)");
+        // 2) Timerange, ...Quark
 		this.createTable(INTERVALS_V1_TABLE_NAME, "duration int8range"); // Columns (i.e. quarks) will be added at runtime
+		this.createTable(INTERVALS_V2_TABLE_NAME, "duration int8range, quark int, attribute varchar(255), value varchar(255), type varchar(255)");
 	}
 	
 	@Override
@@ -306,12 +308,13 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
 
     @Override
     public void modifyAttribute(long t, Object value, int attributeQuark) throws StateValueTypeException {
-        modifyAttributeV1(t, value, attributeQuark);
+        fLastUpdateTime = t;
+        // modifyAttributeV1(t, value, attributeQuark);
+        modifyAttributeV2(t, value, attributeQuark);
     }
 
     // First attemt to fill the db with columns: "duration", "quark1", "quark2", ...
     private void modifyAttributeV1(long t, Object value, int attributeQuark) {
-        fLastUpdateTime = t;
         ITmfStateValue stateValue = TmfStateValue.newValue(value);
         String columnType = null;
         // FIXME: the case below is just to make it work now
@@ -363,6 +366,46 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
         }
     }
 
+    private void modifyAttributeV2(long t, Object value, int attributeQuark) {
+        ITmfStateValue stateValue = TmfStateValue.newValue(value);
+        Pair<Long, ITmfStateValue> ongoingState = fQuarkToOngoingState.getOrDefault(attributeQuark, new Pair<Long, ITmfStateValue>(0L,TmfStateValue.newValue(null)));
+        ITmfStateValue ongoingStateValue = ongoingState.getSecond();
+        if (!ongoingStateValue.isNull()) {
+            // close/insert the interval
+            long ongoingStateStartTime = ongoingState.getFirst();
+            Pair<Long, Long> range = new Pair<Long, Long>(ongoingStateStartTime, t-1);
+            List<String> columns = Arrays.asList("duration", "quark", "attribute", "value", "type");
+            // FIXME: the case below is just to make it work now
+            String columnType = null;
+            switch (stateValue.getType()) {
+            case INTEGER:
+                columnType = "int";
+                break;
+            case LONG:
+                columnType = "int";
+                break;
+            case DOUBLE:
+                columnType = "int";
+                break;
+            case STRING:
+                columnType = "text";
+                break;
+            case CUSTOM:
+                break;
+            case NULL:
+                break;
+            default:
+                break;
+            }
+            List<Object> values = Arrays.asList(range, attributeQuark, fQuarkAndAttribute.get(attributeQuark), ongoingStateValue.unboxValue(), columnType);
+            String sql = generateInsertSql(INTERVALS_V2_TABLE_NAME, columns, values);
+            executeUpdate(sql);
+        }
+        
+        // put the current value "on-top" (cached)
+        fQuarkToOngoingState.put(attributeQuark, new Pair<Long, ITmfStateValue>(t, stateValue));
+    }
+    
 	@Override
 	public ITmfStateValue popAttribute(long arg0, int arg1) throws StateValueTypeException {
 		// TODO Auto-generated method stub
