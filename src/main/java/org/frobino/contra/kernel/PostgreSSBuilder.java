@@ -29,7 +29,7 @@ import com.google.common.collect.HashBiMap;
 public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSystemBuilder{
 
 	private static String QUARK_ATTR_TABLE_NAME = "quark_and_attribute";
-	private static String INTERVALS_TABLE_NAME = "intervals";
+	private static String INTERVALS_V1_TABLE_NAME = "intervalsV1";
 	private int fNextQuark = 1;
 	private long fLastUpdateTime = 0L;
 	private BiMap<Integer, String> fQuarkAndAttribute = HashBiMap.create();
@@ -40,7 +40,7 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
 		// 1) Quark, Attribute
 		// 2) Timerange, ...Quark
 		this.createTable(QUARK_ATTR_TABLE_NAME, "quark int, attribute varchar(255)");
-		this.createTable(INTERVALS_TABLE_NAME, "duration int8range"); // Columns (i.e. quarks) will be added at runtime
+		this.createTable(INTERVALS_V1_TABLE_NAME, "duration int8range"); // Columns (i.e. quarks) will be added at runtime
 	}
 	
 	@Override
@@ -306,6 +306,11 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
 
     @Override
     public void modifyAttribute(long t, Object value, int attributeQuark) throws StateValueTypeException {
+        modifyAttributeV1(t, value, attributeQuark);
+    }
+
+    // First attemt to fill the db with columns: "duration", "quark1", "quark2", ...
+    private void modifyAttributeV1(long t, Object value, int attributeQuark) {
         fLastUpdateTime = t;
         ITmfStateValue stateValue = TmfStateValue.newValue(value);
         String columnType = null;
@@ -331,7 +336,7 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
             break;
         }
         
-        if ((columnType != null) &&  addColumnIfNotExists(INTERVALS_TABLE_NAME, Integer.toString(attributeQuark), columnType)) {
+        if ((columnType != null) &&  addColumnIfNotExists(INTERVALS_V1_TABLE_NAME, Integer.toString(attributeQuark), columnType)) {
             // It is the 1st time we insert this attribute/quark (column) in the DB
             fQuarkToOngoingState.put(attributeQuark, new Pair<Long, ITmfStateValue>(t, stateValue));
         } else {
@@ -349,7 +354,7 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
                 Pair<Long, Long> range = new Pair<Long, Long>(ongoingStateStartTime, t-1);
                 List<String> columns = Arrays.asList("duration", Integer.toString(attributeQuark));
                 List<Object> values = Arrays.asList(range, ongoingStateValue.unboxValue());
-                String sql = generateInsertSql(INTERVALS_TABLE_NAME, columns, values);
+                String sql = generateInsertSql(INTERVALS_V1_TABLE_NAME, columns, values);
                 executeUpdate(sql);
             }
             
