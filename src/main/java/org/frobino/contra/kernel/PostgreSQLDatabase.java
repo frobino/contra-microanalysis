@@ -10,11 +10,13 @@ public class PostgreSQLDatabase {
     private Connection connection;
 
     // JDBC URL, username, and password of PostgreSQL server
-    private static final String url = "jdbc:postgresql://172.17.0.2:5432/";
+
+    // private static final String url = "jdbc:postgresql://172.17.0.2:5432/";
+    private static final String url = "jdbc:postgresql://localhost:5488/";
     private static final String user = "postgres";
     private static final String password = "postgrespw";
     private static final String dbName = "intervals"; // Change this to the desired database name
-
+    
     public PostgreSQLDatabase() {
         try {
             // Register PostgreSQL JDBC driver

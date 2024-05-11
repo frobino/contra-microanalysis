@@ -32,9 +32,46 @@ It can be used to connect ot the postgres db configured in the previous
 steps. Use the user,pwd configured above, the ip address returned by
 ```docker inspect```, and port 5432.
 
+## How to setup DB (postgres) and Grafana
+
+```
+docker-compose up -d
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' pg_data_wh
+```
+
+See [this blog][dcompose].
+
+### Open browser and access the Grafana
+
+```
+http://<ip_of_the_host_machine>:3111
+```
+
+Login with with the default user *admin* and pwd *admin*.
+
+Choose *Data Source* as *PostgreSQL*, then fill with the following params:
+
+```
+Host URL: pg_data_wh:5432
+Database name: postgres
+Username: postgres
+Password: postgrespw
+TLS/SSL Mode: disable
+PostgreSQL version: 15
+```
+
+From the *Home > Explore* try to run a query:
+
+```
+SELECT *  FROM intervalsv2 WHERE attribute = 'CPUs/0/Current_thread' LIMIT 50
+```
+
+
+
 ## NOTEs
 
 - Trace Compass Libraries can be downloaded from [here][tc-libs].
 
 [tc-libs]:https://download.eclipse.org/tracecompass/stable/repository/plugins/
 [bkeeper]:https://github.com/beekeeper-studio/beekeeper-studio
+[dcompose]:https://blog.devgenius.io/how-to-setup-grafana-with-postgresql-database-using-docker-compose-a-step-by-step-guide-e5a9cce90ba3
