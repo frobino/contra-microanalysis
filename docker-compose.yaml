@@ -1,5 +1,7 @@
 version: '3.8'
 services:
+  contra:
+    build: .
   pg_data_wh:
     container_name: pg_data_wh
     image: postgres:15.3
