@@ -63,10 +63,44 @@ PostgreSQL version: 15
 From the *Home > Explore* try to run a query:
 
 ```
-SELECT *  FROM intervalsv2 WHERE attribute = 'CPUs/0/Current_thread' LIMIT 50
+SELECT * FROM intervalsv2 WHERE attribute = 'CPUs/0/Current_thread' LIMIT 50
 ```
 
+From the *Home > Dashboard > Create Dashboard > Add Visualization*,
+then select the (only) data source (which is our postgres database)
+and then try to create a visualization of type *State Timeline*.
 
+Add the following queries to create one timeline for each CPU.
+The following is for CPU0:
+
+```
+SELECT
+    to_timestamp((lower(duration) - 1570653866296619000)) AS "Start time",
+    to_timestamp(upper(duration) - 1570653866296619000) AS "End time",
+    (SELECT value FROM intervalsv2 WHERE attribute = 'Threads/' || intervals.value || '/Exec_name' LIMIT 1) AS "CPU 0"
+FROM 
+    intervalsv2 intervals
+WHERE
+    attribute = 'CPUs/0/Current_thread'
+LIMIT 50
+```
+
+The following is for CPU1:
+
+```
+SELECT
+    to_timestamp((lower(duration) - 1570653866296619000)) AS "Start time",
+    to_timestamp(upper(duration) - 1570653866296619000) AS "End time",
+    (SELECT value FROM intervalsv2 WHERE attribute = 'Threads/' || intervals.value || '/Exec_name' LIMIT 1) AS "CPU 1"
+FROM 
+    intervalsv2 intervals
+WHERE
+    attribute = 'CPUs/1/Current_thread'
+LIMIT 50
+```
+
+Note the ugly subtraction. That is a quick shortcut to handle the
+bigInt (nanoseconds) representation, which is not supported in grafana.
 
 ## NOTEs
 
