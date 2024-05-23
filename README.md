@@ -104,8 +104,10 @@ bigInt (nanoseconds) representation, which is not supported in grafana.
 
 ## NOTEs
 
-- Trace Compass Libraries can be downloaded from [here][tc-libs].
+- Trace Compass Libraries can be downloaded from [here][tc-libs]
+- Java code follows the [google java format][google-java]
 
 [tc-libs]:https://download.eclipse.org/tracecompass/stable/repository/plugins/
 [bkeeper]:https://github.com/beekeeper-studio/beekeeper-studio
 [dcompose]:https://blog.devgenius.io/how-to-setup-grafana-with-postgresql-database-using-docker-compose-a-step-by-step-guide-e5a9cce90ba3
+[google-java]:https://github.com/google/google-java-format
