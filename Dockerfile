@@ -4,6 +4,8 @@ RUN apt update && apt-get install -y maven
 RUN mkdir /app
 COPY . /app
 WORKDIR /app
+# mvn initialize: to install locally the tc libs and deps needed
+# mvn install: to build and get a runnable jar
 RUN mvn initialize && mvn install
 
 FROM eclipse-temurin:17
