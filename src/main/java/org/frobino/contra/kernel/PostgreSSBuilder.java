@@ -35,6 +35,10 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
   private Map<Integer, Pair<Long, ITmfStateValue>> fQuarkToOngoingState = new HashMap<>();
 
   public PostgreSSBuilder() {
+    String envTableName = System.getenv("CONTRA_TABLE_NAME");
+    if (envTableName != null) {
+      INTERVALS_V2_TABLE_NAME = envTableName;
+    }
     // Create the needed tables:
     // 1) Quark, Attribute
     this.createTable(QUARK_ATTR_TABLE_NAME, "quark int, attribute varchar(255)");
@@ -179,10 +183,10 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
         int attributeLastIndex = subattribute.indexOf(attribute) + attribute.length();
         String sa = subattribute.substring(attributeLastIndex);
         if (sa != "") {
-          System.out.println(sa);
+          // System.out.println(sa);
           String[] sarray = sa.split("/");
           nonRecursivesubAttributes.add(attribute + "/" + sarray[1]);
-          System.out.println(sa);
+          // System.out.println(sa);
         }
       }
       subAttributes = nonRecursivesubAttributes.stream().collect(Collectors.toList());

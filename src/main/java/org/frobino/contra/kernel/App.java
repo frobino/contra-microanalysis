@@ -19,12 +19,16 @@ import org.eclipse.tracecompass.tmf.ctf.core.trace.CtfTmfTrace;
 public class App {
   public static void main(String[] args) {
     final String lttngUstTracePath = "resources/traces/lttng-ust";
-    final String lttngKernelTracePath = "resources/traces/lttng-kernel/wget-first-call";
+    String lttngKernelTracePath = "resources/traces/lttng-kernel/wget-first-call";
 
     readTrace(lttngUstTracePath);
 
     // interpretTraceWithMyStateProvider(lttngUstTracePath);
 
+    String envTracePath = System.getenv("CONTRA_TRACE_PATH");
+    if (envTracePath != null) {
+      lttngKernelTracePath = envTracePath;
+    }
     interpretTraceWithMyKernelStateProvider(lttngKernelTracePath);
   }
 
