@@ -23,47 +23,51 @@ public class PostgreSQLDatabase {
 
   public PostgreSQLDatabase() {
     // Override default DB config parameters if specified in env var
-    for (int i = 0; i < 3; i++) {
+    try {
+      String envUrl = System.getenv("CONTRA_DB_URL");
+      if (envUrl != null) {
+        url = envUrl;
+      }
+      String envUser = System.getenv("CONTRA_DB_USER");
+      if (envUser != null) {
+        user = envUser;
+      }
+      String envPwd = System.getenv("CONTRA_DB_PWD");
+      if (envPwd != null) {
+        password = envPwd;
+      }
+      String envDbName = System.getenv("CONTRA_DB_NAME");
+      if (envDbName != null) {
+        dbName = envDbName;
+      }
+
+      // Register PostgreSQL JDBC driver
+      Class.forName("org.postgresql.Driver");
+
+      // Open a connection
+      while (connection == null) {
+        try {
+          connection = DriverManager.getConnection(url, user, password);
+        } catch (SQLException e) {
+          System.out.println("Failed to connect to PostgreSQL, retrying in a sec... ");
+        }
+      }
+
+      // Create the database if it doesn't exist
+      createDatabase();
+
+      // Change the connection URL to point to the "intervals" database
+      // connection.setCatalog(dbName);
       try {
-        String envUrl = System.getenv("CONTRA_DB_URL");
-        if (envUrl != null) {
-          url = envUrl;
-        }
-        String envUser = System.getenv("CONTRA_DB_USER");
-        if (envUser != null) {
-          user = envUser;
-        }
-        String envPwd = System.getenv("CONTRA_DB_PWD");
-        if (envPwd != null) {
-          password = envPwd;
-        }
-        String envDbName = System.getenv("CONTRA_DB_NAME");
-        if (envDbName != null) {
-          dbName = envDbName;
-        }
-
-        // Register PostgreSQL JDBC driver
-        Class.forName("org.postgresql.Driver");
-
-        // Open a connection
-        while (connection == null) {
-          try {
-            connection = DriverManager.getConnection(url, user, password);
-          } catch (SQLException e) {
-            System.out.println("Failed to connect to the DB, retrying in a sec... ");
-          }
-        }
-
-        // Create the database if it doesn't exist
-        createDatabase();
-
-        // Change the connection URL to point to the "intervals" database
-        connection.setCatalog(dbName);
+        connection = DriverManager.getConnection(url + dbName, user, password);
       } catch (SQLException e) {
-        e.printStackTrace();
-      } catch (ClassNotFoundException e) {
+        System.out.println("Failed to connect to the DB");
         e.printStackTrace();
       }
+    } catch (SQLException e) {
+      e.printStackTrace();
+    } catch (ClassNotFoundException e) {
+      e.printStackTrace();
     }
   }
 

@@ -7,7 +7,6 @@ services:
     image: postgres:15.3
     restart: always
     environment:
-      POSTGRES_DB: intervals
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgrespw
     ports:
