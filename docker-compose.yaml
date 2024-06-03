@@ -2,6 +2,8 @@ version: '3.8'
 services:
   contra:
     build: .
+    environment:
+      CONTRA_DB_NAME: intervals123
   pg_data_wh:
     container_name: pg_data_wh
     image: postgres:15.3

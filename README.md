@@ -120,6 +120,47 @@ LIMIT 50
 Note the ugly subtraction. That is a quick shortcut to handle the
 bigInt (nanoseconds) representation, which is not supported in grafana.
 
+### Configure CONTRA
+
+It is possible to configure the CONTRA container using the following
+environment variables:
+
+```
+CONTRA_DB_URL
+Set the postgreSQL URL.
+Default: jdbc:postgresql://pg_data_wh:5432/
+```
+
+```
+CONTRA_DB_USER:
+Set the postgreSQL user name.
+Default: postgres
+```
+
+```
+CONTRA_DB_PWD:
+Set the postgreSQL password.
+Default: postgrespw
+```
+
+```
+CONTRA_DB_NAME:
+Set the postgreSQL database name that CONTRA will create.
+Default: intervals
+```
+
+```
+CONTRA_TABLE_NAME:
+Set the table name that CONTRA will create.
+Default: intervalsV2
+```
+
+```
+CONTRA_TRACE_PATH:
+Set the path to the trace that CONTRA will analyze.
+Default: resources/traces/lttng-kernel/wget-first-call
+```
+
 ## NOTEs
 
 - Trace Compass Libraries can be downloaded from [here][tc-libs]
