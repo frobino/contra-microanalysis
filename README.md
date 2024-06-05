@@ -71,7 +71,7 @@ Choose *Data Source* as *PostgreSQL*, then fill with the following params
 
 ```
 Host URL: pg_data_wh:5432
-Database name: postgres
+Database name: intervals
 Username: postgres
 Password: postgrespw
 TLS/SSL Mode: disable
