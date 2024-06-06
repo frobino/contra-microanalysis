@@ -88,23 +88,7 @@ Default: resources/traces/lttng-kernel/wget-first-call
 - Java code follows the [google java format][google-java]
 - The docker-compose setup has been inspired by [this blog][dcompose]
 
-## How to setup a DB (postgres)
-
-```
-docker pull postgres:15.3
-# To start a container at localhost:5432
-docker run --name test-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgrespw -e POSTGRES_DB=postgres -d postgres:15.3
-# Check the container local ip address
-docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' test-postgres
-```
-
-[bkeeper][bkeeper] is a fancy UI to browse different dbs.
-It can be used to connect ot the postgres db configured in the previous
-steps. Use the user,pwd configured above, the ip address returned by
-```docker inspect```, and port 5432.
-
 [tc-libs]:https://download.eclipse.org/tracecompass/stable/repository/plugins/
-[bkeeper]:https://github.com/beekeeper-studio/beekeeper-studio
 [dcompose]:https://blog.devgenius.io/how-to-setup-grafana-with-postgresql-database-using-docker-compose-a-step-by-step-guide-e5a9cce90ba3
 [google-java]:https://github.com/google/google-java-format
 [sql-views]:https://www.postgresql.org/docs/current/sql-createview.html

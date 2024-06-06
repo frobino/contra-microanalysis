@@ -1,6 +1,12 @@
 # CONTRA Kernel
 
-## Start CONTRA + postgres DB + Grafana
+A CONTRA which reuses the Trace Compass Kernel Analysis to derive
+information from a lttng kernel trace in CTF format and store the
+information in a postgreSQL database.
+
+## Build and start with docker-compose
+
+### Build and start CONTRA-kernel + postgres DB + Grafana
 
 ```
 docker-compose up -d
@@ -20,14 +26,14 @@ as the container is started. So at this point you should be able to:
 1. browse the generated DB
 2. configure Grafana to read the DB and create a chart
 
-## Browse the generated DB
+### Browse the generated DB
 
 [bkeeper][bkeeper] is a fancy UI to browse different dbs.
 It can be used to connect ot the postgres db configured in the previous
 steps. Use the user, pwd, localhost, and port 5488 as specified in
 the docker-compose.yaml for the pg\_data\_wh service.
 
-## Configure Grafana and create visualization
+### Configure Grafana and create visualization
 
 Open the browser and access Grafana:
 
@@ -90,3 +96,41 @@ LIMIT 50
 
 Note the ugly subtraction. That is a quick shortcut to handle the
 bigInt (nanoseconds) representation, which is not supported in grafana.
+
+## Build and start locally
+
+## Setup a DB (postgres)
+
+```
+docker pull postgres:15.3
+# To start a container at localhost:5432
+docker run --name test-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgrespw -e POSTGRES_DB=postgres -d postgres:15.3
+# Check the container local ip address
+docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' test-postgres
+```
+
+[bkeeper][bkeeper] is a fancy UI to browse different dbs.
+It can be used to connect ot the postgres db configured in the previous
+steps. Use the user,pwd configured above, the ip address returned by
+```docker inspect```, and port 5432.
+
+### Build and run CONTRA Kernel
+
+```
+# to install locally the tc libs and deps needed
+mvn initialize
+# to build and get a runnable jar
+mvn install
+# configure the path to the DB where the info will be stored
+# NOTE: substitute 172.17.0.2 with the ip returned by docker inspect
+export CONTRA_DB_URL="jdbc:postgresql://172.17.0.2:5432/"
+# run CONTRA Kernel
+java -jar target/contra-kernel-1.0-SNAPSHOT-jar-with-dependencies.jar
+```
+
+### Browse the DB filled with information
+
+Use [bkeeper][bkeeper] to browse the DB named *intervals*, and the
+table *intervalsV2*.
+
+[bkeeper]:https://github.com/beekeeper-studio/beekeeper-studio
