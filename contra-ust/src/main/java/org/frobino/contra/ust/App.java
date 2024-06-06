@@ -1,4 +1,4 @@
-package org.frobino.contra.kernel;
+package org.frobino.contra.ust;
 
 import org.eclipse.tracecompass.ctf.core.CTFException;
 import org.eclipse.tracecompass.ctf.core.event.IEventDefinition;
@@ -16,8 +16,12 @@ import org.eclipse.tracecompass.tmf.ctf.core.trace.CtfTmfTrace;
 
 public class App {
   public static void main(String[] args) {
-    final String lttngUstTracePath = "resources/traces/lttng-ust";
+    String lttngUstTracePath = "resources/traces/lttng-ust";
 
+    String envTracePath = System.getenv("CONTRA_TRACE_PATH");
+    if (envTracePath != null) {
+      lttngUstTracePath = envTracePath;
+    }
     readTrace(lttngUstTracePath);
 
     interpretTraceWithMyStateProvider(lttngUstTracePath);

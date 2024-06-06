@@ -1,4 +1,4 @@
-package org.frobino.contra.kernel;
+package org.frobino.contra.ust;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.tracecompass.statesystem.core.ITmfStateSystemBuilder;

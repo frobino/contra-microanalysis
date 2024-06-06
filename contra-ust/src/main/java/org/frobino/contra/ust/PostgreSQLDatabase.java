@@ -1,4 +1,4 @@
-package org.frobino.contra.kernel;
+package org.frobino.contra.ust;
 
 import java.sql.*;
 import java.util.Set;
@@ -7,13 +7,30 @@ public class PostgreSQLDatabase {
   private Connection connection;
 
   // JDBC URL, username, and password of PostgreSQL server
-  private static final String url = "jdbc:postgresql://172.17.0.2:5432/";
-  private static final String user = "postgres";
-  private static final String password = "postgrespw";
-  private static final String dbName = "intervals"; // Change this to the desired database name
+  private static String url = "jdbc:postgresql://172.17.0.2:5432/";
+  private static String user = "postgres";
+  private static String password = "postgrespw";
+  private static String dbName = "intervals"; // Change this to the desired database name
 
   public PostgreSQLDatabase() {
     try {
+      String envUrl = System.getenv("CONTRA_DB_URL");
+      if (envUrl != null) {
+        url = envUrl;
+      }
+      String envUser = System.getenv("CONTRA_DB_USER");
+      if (envUser != null) {
+        user = envUser;
+      }
+      String envPwd = System.getenv("CONTRA_DB_PWD");
+      if (envPwd != null) {
+        password = envPwd;
+      }
+      String envDbName = System.getenv("CONTRA_DB_NAME");
+      if (envDbName != null) {
+        dbName = envDbName;
+      }
+
       // Register PostgreSQL JDBC driver
       Class.forName("org.postgresql.Driver");
 
@@ -24,7 +41,13 @@ public class PostgreSQLDatabase {
       createDatabase();
 
       // Change the connection URL to point to the "intervals" database
-      connection.setCatalog(dbName);
+      // connection.setCatalog(dbName);
+      try {
+        connection = DriverManager.getConnection(url + dbName, user, password);
+      } catch (SQLException e) {
+        System.out.println("Failed to connect to the DB");
+        e.printStackTrace();
+      }
     } catch (SQLException e) {
       e.printStackTrace();
     } catch (ClassNotFoundException e) {

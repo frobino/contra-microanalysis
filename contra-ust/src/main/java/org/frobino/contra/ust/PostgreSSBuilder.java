@@ -1,4 +1,4 @@
-package org.frobino.contra.kernel;
+package org.frobino.contra.ust;
 
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;

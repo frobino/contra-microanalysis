@@ -4,11 +4,11 @@
 	 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.frobino.contra.kernel</groupId>
-  <artifactId>contra-kernel</artifactId>
+  <groupId>org.frobino.contra.ust</groupId>
+  <artifactId>contra-ust</artifactId>
   <version>1.0-SNAPSHOT</version>
 
-  <name>contra-kernel</name>
+  <name>contra-ust</name>
   <!-- FIXME change it to the project's website -->
   <url>http://www.example.com</url>
 
@@ -154,7 +154,7 @@
           <artifactId>exec-maven-plugin</artifactId>
           <version>1.5.0</version>
           <configuration>
-            <mainClass>org.frobino.contra.kernel.App</mainClass>
+            <mainClass>org.frobino.contra.ust.App</mainClass>
           </configuration>
 	</plugin>
       </plugins>
@@ -257,13 +257,13 @@
       </plugin>
 
       <!-- Enables the generation of a standalone jar file to execute:
-      java -jar contra-kernel-1.0-SNAPSHOT-jar-with-dependencies.jar -->
+      java -jar contra-ust-1.0-SNAPSHOT-jar-with-dependencies.jar -->
       <plugin>
   	<artifactId>maven-assembly-plugin</artifactId>
   	<configuration>
   	  <archive>
   	    <manifest>
-  	      <mainClass>org.frobino.contra.kernel.App</mainClass>
+  	      <mainClass>org.frobino.contra.ust.App</mainClass>
   	    </manifest>
   	  </archive>
   	  <descriptorRefs>

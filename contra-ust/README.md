@@ -27,10 +27,17 @@ See docker image.
 mvn initialize
 # To build and get a runnable jar
 mvn install
+# configure the path to the DB where the info will be stored
+# NOTE: substitute 172.17.0.2 with the ip returned by docker inspect
+export CONTRA_DB_URL="jdbc:postgresql://172.17.0.2:5432/"
 # To run
-cd /app/target
-java -jar contra-kernel-1.0-SNAPSHOT-jar-with-dependencies.jar
+java -jar target/contra-ust-1.0-SNAPSHOT-jar-with-dependencies.jar
 ```
+
+## Browse the DB filled with information
+
+Use [bkeeper][bkeeper] to browse the DB named *intervals*, and the
+table *intervals*.
 
 ## NOTEs
 
