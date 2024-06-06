@@ -34,8 +34,9 @@ Currently we have 2 CONTRAs:
 - [**contra-kernel**](contra-kernel/README.md), which reuses the
   Trace Compass Kernel Analysis to derive information from a lttng
   kernel trace in CTF format;
-- **contra-ust**, which reuses a generic Trace Compass Analysis to
-  derive information from a lttng userspace trace in CTF format;
+- [**contra-ust**](contra-ust/README.md), which reuses a generic
+  Trace Compass Analysis to derive information from a lttng userspace
+  trace in CTF format;
 
 See the README in each subproject for more detailed instructions.
 As of now, **contra-kernel** is more complete and tested, so we suggest
