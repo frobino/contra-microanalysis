@@ -64,9 +64,19 @@ public class App {
         /* Fall-back to the base LttngEventLayout */
         sp = new MyKernelStateProvider(tmfTrace, DefaultEventLayout.getInstance());
       }
+
+      /*
+       * TODO: check the following:
+       *
+       * the assignTargetStateSystem call seems to be needed just to start the
+       * "EventHandlerThread". So we are just initializing a SS that is never
+       * used in order to trigger the exec of the event handler thread.
+       * There must be more elegant ways of doing this.
+       */
       IStateHistoryBackend backend = StateHistoryBackendFactory.createInMemoryBackend("Test", 0L);
       ITmfStateSystemBuilder stateSystem = StateSystemFactory.newStateSystem(backend);
       sp.assignTargetStateSystem(stateSystem);
+
       // Read events from real trace
       while (traceReader.hasMoreEvents()) {
         IEventDefinition def = traceReader.getCurrentEventDef();
