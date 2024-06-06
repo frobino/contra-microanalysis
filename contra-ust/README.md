@@ -3,21 +3,7 @@
 A service to interpret CTF traces, derive information, and store it to
 a DB for further analysis.
 
-## How to build and run
-
-See docker image.
-
-```
-# To install locally the tc libs and deps needed
-mvn initialize
-# To build and get a runnable jar
-mvn install
-# To run
-cd /app/target
-java -jar contra-kernel-1.0-SNAPSHOT-jar-with-dependencies.jar
-```
-
-## How to setup a DB (postgres)
+## Setup a DB (postgres)
 
 ```
 docker pull postgres:15.3
@@ -31,6 +17,20 @@ docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' tes
 It can be used to connect ot the postgres db configured in the previous
 steps. Use the user,pwd configured above, the ip address returned by
 ```docker inspect```, and port 5432.
+
+## How to build and run
+
+See docker image.
+
+```
+# To install locally the tc libs and deps needed
+mvn initialize
+# To build and get a runnable jar
+mvn install
+# To run
+cd /app/target
+java -jar contra-kernel-1.0-SNAPSHOT-jar-with-dependencies.jar
+```
 
 ## NOTEs
 

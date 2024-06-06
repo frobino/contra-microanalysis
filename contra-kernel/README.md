@@ -99,7 +99,7 @@ bigInt (nanoseconds) representation, which is not supported in grafana.
 
 ## Build and start locally
 
-## Setup a DB (postgres)
+### Setup a DB (postgres)
 
 ```
 docker pull postgres:15.3
