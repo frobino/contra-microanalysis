@@ -77,6 +77,9 @@ public class App {
       ITmfStateSystemBuilder stateSystem = StateSystemFactory.newStateSystem(backend);
       sp.assignTargetStateSystem(stateSystem);
 
+      // Record start time
+      long startTime = System.currentTimeMillis();
+
       // Read events from real trace
       while (traceReader.hasMoreEvents()) {
         IEventDefinition def = traceReader.getCurrentEventDef();
@@ -84,7 +87,15 @@ public class App {
         sp.myEventHandle(e);
         traceReader.advance();
       }
+
+      // Record end time
+      long endTime = System.currentTimeMillis();
+      long elapsedTime = endTime - startTime;
+      // No batch: 165 sec
+      System.out.println("Elapsed time: " + elapsedTime + " milliseconds");
+
       sp.dispose();
+
       // Close the reader
       traceReader.close();
     } catch (CTFException e) {

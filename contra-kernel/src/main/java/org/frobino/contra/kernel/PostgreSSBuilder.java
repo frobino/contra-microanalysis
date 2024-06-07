@@ -33,6 +33,8 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
   private long fLastUpdateTime = 0L;
   private BiMap<Integer, String> fQuarkAndAttribute = HashBiMap.create();
   private Map<Integer, Pair<Long, ITmfStateValue>> fQuarkToOngoingState = new HashMap<>();
+  private List<List<Object>> fValues = new ArrayList<>();
+  private List<String> columns = Arrays.asList("duration", "quark", "attribute", "value", "type");
 
   public PostgreSSBuilder() {
     String envTableName = System.getenv("CONTRA_TABLE_NAME");
@@ -278,10 +280,19 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
   @Override
   public void closeHistory(long t) {
     // TODO: If anything to be pushed to the DB, do it now
+    if (!fValues.isEmpty()) {
+      String sql = generateInsertManySql(INTERVALS_V2_TABLE_NAME, columns, fValues);
+      executeUpdate(sql);
+      fValues.clear();
+    }
 
     // TODO: Push the "quark to attribute" table
-    List<String> a = Arrays.asList(new String[] {"quark", "attribute"});
+    final String insertSql =
+        "INSERT INTO " + QUARK_ATTR_TABLE_NAME + "(quark, attribute) VALUES (?, ?);";
+    batch(insertSql, fQuarkAndAttribute);
 
+    /*
+    List<String> a = Arrays.asList(new String[] {"quark", "attribute"});
     for (Map.Entry<Integer, String> entry : fQuarkAndAttribute.entrySet()) {
       List<Object> l = new ArrayList<>();
       l.add(entry.getKey());
@@ -289,6 +300,7 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
       String sql = generateInsertSql(QUARK_ATTR_TABLE_NAME, a, l);
       executeUpdate(sql);
     }
+    */
   }
 
   @Override
@@ -390,7 +402,7 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
       // close/insert the interval
       long ongoingStateStartTime = ongoingState.getFirst();
       Pair<Long, Long> range = new Pair<Long, Long>(ongoingStateStartTime, t - 1);
-      List<String> columns = Arrays.asList("duration", "quark", "attribute", "value", "type");
+      // List<String> columns = Arrays.asList("duration", "quark", "attribute", "value", "type");
       // FIXME: the case below is just to make it work now
       String columnType = null;
       switch (stateValue.getType()) {
@@ -420,8 +432,16 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
               fQuarkAndAttribute.get(attributeQuark),
               ongoingStateValue.unboxValue(),
               columnType);
-      String sql = generateInsertSql(INTERVALS_V2_TABLE_NAME, columns, values);
-      executeUpdate(sql);
+      fValues.add(values);
+      if (fValues.size() >= 1024) {
+        String sql = generateInsertManySql(INTERVALS_V2_TABLE_NAME, columns, fValues);
+        executeUpdate(sql);
+        fValues.clear();
+      }
+
+      // TODO: execute update only if batch has reached a certain size
+      // String sql = generateInsertSql(INTERVALS_V2_TABLE_NAME, columns, values);
+      // executeUpdate(sql);
     }
 
     // put the current value "on-top" (cached)

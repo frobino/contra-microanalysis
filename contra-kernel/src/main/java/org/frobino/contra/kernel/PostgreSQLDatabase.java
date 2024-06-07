@@ -2,6 +2,7 @@ package org.frobino.contra.kernel;
 
 import java.sql.*;
 import java.util.List;
+import java.util.Map;
 import org.eclipse.tracecompass.tmf.core.util.Pair;
 
 public class PostgreSQLDatabase {
@@ -9,10 +10,10 @@ public class PostgreSQLDatabase {
 
   // JDBC URL:
   // Use the following url when running contra.jar locally to fill a postgres container
-  // private static final String url = "jdbc:postgresql://172.17.0.2:5432/";
+  // private String url = "jdbc:postgresql://172.17.0.2:5432/";
   // Use the following url when running contra.jar locally to fill a docker-compose with postgres +
   // grafana
-  // private static final String url = "jdbc:postgresql://localhost:5488/";
+  // private String url = "jdbc:postgresql://localhost:5488/";
   // Use the following url when running a docker-compose with contra.jar + postgres + grafana
   private String url = "jdbc:postgresql://pg_data_wh:5432/";
 
@@ -195,12 +196,132 @@ public class PostgreSQLDatabase {
     return sqlBuilder.append(valuesBuilder).append(")").toString();
   }
 
+  /**
+   * Generate a single INSERT command with all values to be inserted in a table.
+   *
+   * @param tableName name of the table where the values will be inserted
+   * @param columns a list of strings representing the column names
+   * @param values a list of list. Each element of the outmost list is a list containing a row of
+   *     the table
+   * @return the single INSERT command to be executed to insert values in the table
+   */
+  public static String generateInsertManySql(
+      String tableName, List<String> columns, List<List<Object>> values) {
+    StringBuilder sqlBuilder = new StringBuilder("INSERT INTO ").append(tableName).append(" (");
+    StringBuilder valuesBuilder = new StringBuilder(") VALUES (");
+
+    /*
+    * FIXME: the code in this method looks quite ugly.
+    * Try to use PreparedStatement instead and check if there is any performance differences compared to the handmade batching.
+    *
+      PreparedStatement pstmt = null;
+      // Prepare the batch insert statement
+      pstmt = conn.prepareStatement(INSERT_USER_SQL);
+
+      // Example data to be inserted
+      String[][] userData = {
+        {"Alice", "alice@example.com"},
+        {"Bob", "bob@example.com"},
+        {"Charlie", "charlie@example.com"},
+        // Add more data as needed
+      };
+
+      // Set auto-commit to false
+      conn.setAutoCommit(false);
+
+      // Batch the insert operations
+      for (String[] user : userData) {
+        pstmt.setString(1, user[0]);
+        pstmt.setString(2, user[1]);
+        pstmt.addBatch();
+      }
+
+      // Execute the batch
+      pstmt.executeBatch();
+
+      // Commit the transaction
+      conn.commit();
+    */
+
+    // Create the "columns" part of the query
+    for (int counter = 0; counter < columns.size(); counter++) {
+      sqlBuilder.append("\"" + columns.get(counter) + "\"");
+      if (counter < columns.size() - 1) {
+        sqlBuilder.append(", ");
+      }
+    }
+
+    // Create the "values" part of the query
+    int nrOfValues = values.size();
+    for (int counter = 0; counter < nrOfValues; counter++) {
+      Object valueToInsert = values.get(counter);
+      if (valueToInsert instanceof List<?>) {
+        int nrElements = ((List<Object>) valueToInsert).size();
+        int elCounter = 0;
+        for (Object valueElement : (List<Object>) valueToInsert) {
+          if (valueElement instanceof Pair<?, ?>) {
+            Pair<Long, Long> range = (Pair<Long, Long>) valueElement;
+            // we are trying to insert a range
+            valuesBuilder.append(
+                "int8range(" + range.getFirst() + "," + (range.getSecond() + 1) + ")");
+          } else if (valueElement instanceof String) {
+            valuesBuilder.append("'" + valueElement + "'");
+          } else {
+            valuesBuilder.append(valueElement);
+          }
+          elCounter++;
+          if (elCounter < nrElements) {
+            valuesBuilder.append(", ");
+          }
+        }
+        if (counter < nrOfValues - 1) {
+          valuesBuilder.append("), (");
+        }
+      }
+    }
+
+    return sqlBuilder.append(valuesBuilder).append(")").toString();
+  }
+
   public void executeUpdate(String sql) {
     Statement statement;
     try {
       statement = connection.createStatement();
       statement.executeUpdate(sql);
       statement.close();
+    } catch (SQLException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+  }
+
+  /**
+   * @param sql a parametrized SQL query
+   * @param userData a list of arrays where each inner array is composed by the parameters to be put
+   *     in the SQL query
+   */
+  public void batch(final String sql, Map<Integer, String> userData) {
+    Connection conn = getConnection();
+    // Create a statement
+    try {
+      // Prepare the batch insert statement
+      PreparedStatement pstmt = conn.prepareStatement(sql);
+      // Set auto-commit to false
+      conn.setAutoCommit(false);
+
+      // Batch the insert operations
+      for (Map.Entry<Integer, String> entry : userData.entrySet()) {
+        pstmt.setInt(1, entry.getKey());
+        pstmt.setString(2, entry.getValue());
+        pstmt.addBatch();
+      }
+
+      // Execute the batch
+      pstmt.executeBatch();
+
+      // Commit the transaction
+      conn.commit();
+
     } catch (SQLException e) {
       // TODO Auto-generated catch block
       e.printStackTrace();
