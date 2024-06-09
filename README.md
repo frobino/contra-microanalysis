@@ -1,7 +1,13 @@
 # CONtainerized TRace Analysis
 
-CONTRAs are services to *interpret CTF traces*, *derive information*, and
-*store it to a DB* for further analysis.
+CONTRAs are applications that *interpret traces*, *derive information*,
+and *store the derived information into a database* for further analysis.
+CONTRAs can be used as services in a microservice architecture.
+
+<div align="center">
+<img src="doc/contra-logo.jpg" height="372"></br>
+This is Conrado Travagli, CONTRAs official mascot
+</div>
 
 ## Goals of the project
 
