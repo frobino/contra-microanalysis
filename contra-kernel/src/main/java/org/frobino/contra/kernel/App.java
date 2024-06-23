@@ -68,7 +68,7 @@ public class App {
       /*
        * TODO: check the following:
        *
-       * the assignTargetStateSystem call seems to be needed just to start the
+       * the AbstractTmfStateProvider.assignTargetStateSystem call starts the
        * "EventHandlerThread". So we are just initializing a SS that is never
        * used in order to trigger the exec of the event handler thread.
        * There must be more elegant ways of doing this.
@@ -94,7 +94,7 @@ public class App {
       // No batch: 165 sec
       System.out.println("Elapsed time: " + elapsedTime + " milliseconds");
 
-      // Dispose/close resources that needs to be manually disposed/closed to avoid leaving "zombie" threads
+      // Dispose/close resources that needs to be manually disposed/closed to avoid "zombie" threads
       sp.dispose();
       tmfTrace.dispose();
       traceReader.close();
