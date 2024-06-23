@@ -94,9 +94,9 @@ public class App {
       // No batch: 165 sec
       System.out.println("Elapsed time: " + elapsedTime + " milliseconds");
 
+      // Dispose/close resources that needs to be manually disposed/closed to avoid leaving "zombie" threads
       sp.dispose();
-
-      // Close the reader
+      tmfTrace.dispose();
       traceReader.close();
     } catch (CTFException e) {
       // Issues when creating new CTFTrace
