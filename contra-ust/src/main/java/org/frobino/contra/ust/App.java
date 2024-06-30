@@ -68,7 +68,9 @@ public class App {
         sp.myEventHandle(e);
         traceReader.advance();
       }
-      // Close the reader
+      // Dispose/close resources that needs to be manually disposed/closed to avoid "zombie" threads
+      sp.dispose();
+      tmfTrace.dispose();
       traceReader.close();
     } catch (CTFException e) {
       // Issues when creating new CTFTrace
