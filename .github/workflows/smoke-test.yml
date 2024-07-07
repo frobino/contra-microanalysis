@@ -1,0 +1,34 @@
+name: Postgres DB Setup, Query, and Validation
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  setup-and-query-db:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Build and run docker images
+      run: cd ${GITHUB_WORKSPACE}/contra-kernel && docker-compose up -d
+
+    - name: Install PostgreSQL client
+      run: sudo apt-get install -y postgresql-client
+
+    - name: Query the database and validate content
+      id: query-db
+      run: |
+        EXPECTED_ROWS="[1570653866296619471,1570653866296655001) | 36 | CPUs/0/Current_thread | 5387 | int [1570653866296655001,1570653866296703401) | 36 | CPUs/0/Current_thread | 1 | int [1570653866296703401,1570653866296741621) | 36 | CPUs/0/Current_thread | 0 | int [1570653866296741621,1570653866297121872) | 36 | CPUs/0/Current_thread | 1523 | int [1570653866297121872,1570653866298126474) | 36 | CPUs/0/Current_thread | 0 | int"
+        QUERY_RESULT=$(PGPASSWORD=postgrespw psql -h localhost -p 5488 -U postgres -d intervals -t -c "SELECT * FROM intervalsv2 WHERE attribute = 'CPUs/0/Current_thread' LIMIT 5;" | xargs)
+        echo "Query result: $QUERY_RESULT"
+        if [ "$QUERY_RESULT" != "$EXPECTED_ROWS" ]; then
+          echo "Expected $EXPECTED_COUNT users but found $QUERY_RESULT users."
+          exit 1
+        fi
+
+    - name: Success message
+      if: success()
+      run: echo "Database content is as expected."
