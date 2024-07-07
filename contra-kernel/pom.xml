@@ -30,7 +30,7 @@
     <dependency>
       <groupId>org.eclipse.mytracecompass</groupId>
       <artifactId>org.eclipse.tracecompass.ctf.core</artifactId>
-      <version>4.4.0</version>
+      <version>4.5.0</version>
     </dependency>
     <!-- ctf.parser, common.core neeeded from ctf.core -->
     <dependency>
@@ -179,10 +179,10 @@
   	      <goal>install-file</goal>
  	    </goals>
   	    <configuration>
-  	      <file>${project.basedir}/resources/tc-libs/org.eclipse.tracecompass.ctf.core_4.4.0.202312190935.jar</file>
+  	      <file>${project.basedir}/resources/tc-libs/org.eclipse.tracecompass.ctf.core_4.5.0.202406270833.jar</file>
   	      <groupId>org.eclipse.mytracecompass</groupId>
   	      <artifactId>org.eclipse.tracecompass.ctf.core</artifactId>
-  	      <version>4.4.0</version>
+  	      <version>4.5.0</version>
   	      <packaging>jar</packaging>
   	    </configuration>
   	  </execution>
