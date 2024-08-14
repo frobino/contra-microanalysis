@@ -111,3 +111,21 @@ fig = ff.create_gantt(df, colors=colors, index_col = 'Thread',  bar_width = 0.4,
 fig.update_layout(xaxis_type='linear', autosize=False, width=800, height=400)
 st.plotly_chart(fig, use_container_width=True)
 
+
+
+# Massage the dataframe to simplify creation of charts
+#
+# NOTE: this could be done also using a separate SQL query, not sure what is best.
+# FIXME: we do not want to sum all columns, only the "delta"
+g = df.groupby('Thread').sum()
+
+# A Treemap (similar to the bottom of a flame chart) to indicate which thread takes more time
+fig = px.treemap(
+    df,
+    path=['Thread'],            # Define the hierarchy
+    values='delta',             # The metric to size the areas
+    color='delta',              # The color of the blocks
+    hover_data={'delta': True}, # Additional data on hover
+    title="Treemap Example"
+)
+st.plotly_chart(fig, use_container_width=True)
