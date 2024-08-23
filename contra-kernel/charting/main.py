@@ -25,23 +25,33 @@ conn = p2.connect(**params, dbname= "intervals")
 
 st.write("My First App")
 
+# Dummy test query + chart using the charting features of st:
+#
 # SQL_Query = pd.read_sql('SELECT quark,quark FROM intervalsv2', conn)
 # df = pd.DataFrame(SQL_Query, columns=['quark','quark'])
 # st.line_chart(df)
 
-SQL_Query = pd.read_sql(
-"""SELECT
-    (lower(duration)) AS "Start time",
-    (upper(duration)) AS "End time",
-    (SELECT value FROM intervalsv2 WHERE attribute = \'Threads/\' || intervals.value || \'/Exec_name\' LIMIT 1) AS "Thread"
-FROM
-    intervalsv2 intervals -- <table name> <db name>
-WHERE
-    attribute = \'CPUs/1/Current_thread\'
-""", conn)
-# LIMIT 50""", conn)
+# Below, an example of how to load a query "in the code" (i.e. not from file)
+#
+# SQL_Query = pd.read_sql(
+# """SELECT
+#     (lower(duration)) AS "Start time",
+#     (upper(duration)) AS "End time",
+#     (SELECT value FROM intervalsv2 WHERE attribute = \'Threads/\' || intervals.value || \'/Exec_name\' LIMIT 1) AS "Thread"
+# FROM
+#     intervalsv2 intervals -- <table name> <db name>
+# WHERE
+#     attribute = \'CPUs/1/Current_thread\'
+# """, conn)
+# # LIMIT 50""", conn)
+#
+# df = pd.DataFrame(SQL_Query)
 
-df = pd.DataFrame(SQL_Query)
+# Read the sql file and execute the query (fill the df)
+with open('../queries/resources-view-CPU1-threads.sql', 'r') as query:
+    df = pd.read_sql_query(query.read(),conn)
+
+st.write("Trying to create something similar to the Kernel Control flow view")
 
 # Massage the dataframe to simplify creation of charts
 #
@@ -54,11 +64,13 @@ df.dropna(subset=['Thread'], inplace=True)
 df['delta'] = df['End time'] - df['Start time']
 
 # Something similar to TC Kernel Control Flow View, using plotly express timeline
-fig = px.timeline(df, x_start="Start time", x_end="End time", y="Thread")
+fig = px.timeline(df, x_start="Start time", x_end="End time", y="Thread", title="Control flow view")
 fig.layout.xaxis.type = 'linear'
 fig.data[0].x = df.delta.tolist()
 fig = fig.full_figure_for_development(warn=False)
 st.plotly_chart(fig, use_container_width=True)
+
+st.write("Trying to create something similar to the Kernel Resources view")
 
 # Massage the dataframe to simplify creation of charts
 #
@@ -68,27 +80,19 @@ df['CPU nr'] = '1'
 # The line below should work, but some issues are present in px.timeline.
 # See: https://stackoverflow.com/questions/68500434/bars-of-plotly-timeline-disappear-when-adding-color
 # fig = px.timeline(df, x_start="Start", x_end="Finish", y="Task", color="CPU Task")
-fig = px.timeline(df, x_start="Start time", x_end="End time", y="CPU nr")
+fig = px.timeline(df, x_start="Start time", x_end="End time", y="CPU nr", title="Resources view")
 fig.update_yaxes(autorange="reversed")
 fig.layout.xaxis.type = 'linear'
 fig.data[0].x = df.delta.tolist()
 fig = fig.full_figure_for_development(warn=False)
 st.plotly_chart(fig, use_container_width=True)
 
+st.write("Trying to create something similar to the Kernel Resources view")
 
-
-
-
-
-
-
-
-
-
-# print(df)
-
-
-# NO: https://stackoverflow.com/questions/73247210/how-to-plot-a-gantt-chart-using-timesteps-and-not-dates-using-plotly
+# NOTE:
+# in theory we would not need to create the "delta" column above.
+# See: https://stackoverflow.com/questions/73247210/how-to-plot-a-gantt-chart-using-timesteps-and-not-dates-using-plotly
+#
 # fig = px.timeline(df, x_start="Start", x_end="End", y="CPU 1")
 # fig.update_layout(xaxis_type='linear', autosize=False, width=800, height=400)
 # st.plotly_chart(fig, use_container_width=True)
@@ -107,11 +111,11 @@ for i in range(1, df.Thread.nunique()+1):
     colors.append('#%02X%02X%02X' % (r(),r(),r()))
 
 # The TC Kernel Resource View, using the deprecated create_gantt instead of plotly express timeline:
-fig = ff.create_gantt(df, colors=colors, index_col = 'Thread',  bar_width = 0.4, show_colorbar=True, group_tasks=True)
+fig = ff.create_gantt(df, colors=colors, index_col = 'Thread',  bar_width = 0.4, show_colorbar=True, group_tasks=True, title="Resources view")
 fig.update_layout(xaxis_type='linear', autosize=False, width=800, height=400)
 st.plotly_chart(fig, use_container_width=True)
 
-
+st.write("Trying to create something new, a treemap view")
 
 # Massage the dataframe to simplify creation of charts
 #
