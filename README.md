@@ -1,13 +1,28 @@
 # CONtainerized TRace Analysis
 
+<div align="center">
+<img src="doc/contra-logo.jpg" height="372"></br>
+WELCOME from Conrado Travagli, CONTRAs official mascot</br></br>
+</div>
+
 CONTRAs are applications that *interpret traces*, *derive information*,
 and *store the derived information into a database* for further analysis.
 CONTRAs can be used as services in a microservice architecture.
 
-<div align="center">
-<img src="doc/contra-logo.jpg" height="372"></br>
-This is Conrado Travagli, CONTRAs official mascot
-</div>
+The following flow chart gives an overview of how CONTRAs are used:
+
+```mermaid
+flowchart LR
+    t>Trace] --> con[CONTRA]
+    con --> db[(Database)]
+    db -.- q[SQL query]
+    subgraph consumers
+        q --> st[Streamlit]
+        q --> jup[Jupiter Notebook]
+        q --> g[Grafana]
+        q --> any[...]
+    end
+```
 
 ## Goals of the project
 
