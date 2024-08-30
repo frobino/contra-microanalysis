@@ -1,4 +1,5 @@
 from sqlalchemy import create_engine
+from os import environ
 import streamlit as st
 import pandas as pd
 import psycopg2 as p2
@@ -15,11 +16,34 @@ import random
 # )
 # conn = create_engine("mysql://postgres:postgrespw@localhost:5488/intervals")
 
+# Try to get params from envvar
+host = environ.get('STREAMLIT_DB_HOST')
+if host is None:
+    host = "localhost"
+port = environ.get('STREAMLIT_DB_PORT')
+if port is None:
+    port = 5488
+user = environ.get('STREAMLIT_DB_USER')
+if user is None:
+    user = "postgres"
+password = environ.get('STREAMLIT_DB_PWD')
+if password is None:
+    password = "postgrespw"
+query_path = environ.get('STREAMLIT_QUERY_PATH')
+if query_path is None:
+    query_path = "../queries/resources-view-CPU1-threads.sql"
+
 params = {
-    "host": "localhost",
-    "user": "postgres",
-    "port": 5488,
-    "password": "postgrespw" 
+    # # "host": "localhost",
+    # # "port": 5488,
+    # "host": "pg_data_wh",
+    # "port": 5432,
+    # "user": "postgres",
+    # "password": "postgrespw"
+    "host": host,
+    "port": port,
+    "user": user,
+    "password": password
 }
 conn = p2.connect(**params, dbname= "intervals")
 
@@ -48,7 +72,7 @@ st.write("My First App")
 # df = pd.DataFrame(SQL_Query)
 
 # Read the sql file and execute the query (fill the df)
-with open('../queries/resources-view-CPU1-threads.sql', 'r') as query:
+with open(query_path, 'r') as query:
     df = pd.read_sql_query(query.read(),conn)
 
 st.write("Trying to create something similar to the Kernel Control flow view")
