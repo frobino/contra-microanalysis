@@ -5,6 +5,16 @@ services:
     environment:
       CONTRA_DB_NAME: intervals
       CONTRA_DB_URL: "jdbc:postgresql://pg_data_wh:5432/"
+  streamlit:
+    build: ./consumers/streamlit
+    ports:
+      - "8501:8501"
+    environment:
+      STREAMLIT_DB_HOST: pg_data_wh
+      STREAMLIT_DB_PORT: 5432
+      STREAMLIT_DB_USER: postgres
+      STREAMLIT_DB_PWD: postgrespw
+      STREAMLIT_QUERY_PATH: ./resources-view-CPU1-threads.sql
   pg_data_wh:
     container_name: pg_data_wh
     image: postgres:15.3
