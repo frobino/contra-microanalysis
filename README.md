@@ -5,7 +5,7 @@
 WELCOME from Conrado Travagli, CONTRAs official mascot</br></br>
 </div>
 
-CONTRAs are applications that *interpret traces*, *derive information*,
+CONTRAs are applications that *interpret [traces][tracing]*, *derive information*,
 and *store the derived information into a database* for further analysis.
 CONTRAs can be used as services in a microservice architecture.
 
@@ -15,7 +15,7 @@ The following flow chart gives an overview of how CONTRAs are used:
 flowchart LR
     t>Trace] --> con[CONTRA]
     con --> db[(Database)]
-    db -.- q[SQL query]
+    db -.- q[Queries]
     subgraph consumers
         q --> st[Streamlit]
         q --> jup[Jupiter Notebook]
@@ -48,7 +48,13 @@ Future work can include the following goals:
 ## How to build and run a CONTRA
 
 The easiest way to get a feeling of what a CONTRA is and how to use it
-is to run docker or docker-compose in one of the CONTRAs in this repo.
+is to run docker-compose in one of the CONTRAs in this repo.
+The docker-compose command will:
+
+- build the selected CONTRA and create a docker image out of it
+- instantiate a CONTRA container, a database and some consumers
+- run the CONTRA container with an example trace so that it can fill the
+  database and consequently fill the consumers with data
 
 Currently we have 2 CONTRAs:
 
@@ -60,8 +66,8 @@ Currently we have 2 CONTRAs:
   trace in CTF format;
 
 See the README in each subproject for more detailed instructions.
-As of now, **contra-kernel** is more complete and tested, so we suggest
-to start from there.
+As of now, **contra-kernel is more complete and tested, so we suggest
+to start from there**.
 
 ### Configure CONTRAs
 
@@ -114,3 +120,4 @@ Default: resources/traces/lttng-kernel/wget-first-call
 [dcompose]:https://blog.devgenius.io/how-to-setup-grafana-with-postgresql-database-using-docker-compose-a-step-by-step-guide-e5a9cce90ba3
 [google-java]:https://github.com/google/google-java-format
 [sql-views]:https://www.postgresql.org/docs/current/sql-createview.html
+[tracing]:https://en.wikipedia.org/wiki/Tracing_(software)

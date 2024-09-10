@@ -6,7 +6,9 @@ information in a postgreSQL database.
 
 ## Build and start with docker-compose
 
-### Build and start CONTRA-kernel + postgres DB + Grafana
+This section shows how to use docker to create a full fledged application
+using the CONTRA kernel.
+From this folder execute the command below:
 
 ```
 docker-compose up -d
@@ -14,26 +16,39 @@ docker-compose up -d
 
 The command will start:
 
-- a CONTRA container, whose goal is to *interpret a linux kernel CTF trace*,
-*derive information (using one of Trace Compass kernel analysis)*, and
-*store the analysis results to a postgres DB*;
+- a CONTRA container, whose goal is to *interpret a linux kernel CTF
+  trace*, *derive information (using one of Trace Compass kernel
+  analysis)*, and *store the analysis results to a postgres DB*;
 - a postgres DB where the analysis results are stored;
-- a grafana instance, togheter with a own postgres DB to store grafana configurations
+- some consumers of the data stored in the DB, namely:
+  - a streamlit application;
+  - a grafana instance, togheter with a own postgres DB to store
+    grafana configurations;
 
 The CONTRA container will start reading a trace and fill the DB as soon
 as the container is started. So at this point you should be able to:
 
-1. browse the generated DB
-2. configure Grafana to read the DB and create a chart
+1. browse the DB filled by the CONTRA kernel
+2. access the streamlit application and see how it used the DB data to
+   fill some charts
+3. configure Grafana to read the DB and create a chart
 
-### Browse the generated DB
+### 1. Browse the generated DB
 
 [bkeeper][bkeeper] is a fancy UI to browse different dbs.
 It can be used to connect ot the postgres db configured in the previous
 steps. Use the user, pwd, localhost, and port 5488 as specified in
 the docker-compose.yaml for the pg\_data\_wh service.
 
-### Configure Grafana and create visualization
+### 2. Access the streamlit application
+
+Open the browser and access the streamlit application:
+
+```
+http://localhost:8501/
+```
+
+### 3. Configure Grafana and create visualization
 
 Open the browser and access Grafana:
 
