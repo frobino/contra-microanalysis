@@ -32,16 +32,11 @@
       <artifactId>org.eclipse.tracecompass.ctf.core</artifactId>
       <version>4.5.0</version>
     </dependency>
-    <!-- ctf.parser, common.core neeeded from ctf.core -->
+    <!-- ctf.parser, neeeded from ctf.core -->
     <dependency>
       <groupId>org.eclipse.mytracecompass</groupId>
       <artifactId>org.eclipse.tracecompass.ctf.parser</artifactId>
       <version>1.1.1</version>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.mytracecompass</groupId>
-      <artifactId>org.eclipse.tracecompass.common.core</artifactId>
-      <version>5.2.0</version>
     </dependency>
 
     <!-- Guava, Antlr and Gson are needed from tracecompass ctf.core -->
@@ -177,20 +172,6 @@
   	      <groupId>org.eclipse.mytracecompass</groupId>
   	      <artifactId>org.eclipse.tracecompass.ctf.core</artifactId>
   	      <version>4.5.0</version>
-  	      <packaging>jar</packaging>
-  	    </configuration>
-  	  </execution>
-  	  <execution>
-	    <id>common-core</id>
-  	    <phase>initialize</phase>
-  	    <goals>
-  	      <goal>install-file</goal>
- 	    </goals>
-  	    <configuration>
-  	      <file>${project.basedir}/resources/tc-libs/org.eclipse.tracecompass.common.core_5.2.0.202312190935.jar</file>
-  	      <groupId>org.eclipse.mytracecompass</groupId>
-  	      <artifactId>org.eclipse.tracecompass.common.core</artifactId>
-  	      <version>5.2.0</version>
   	      <packaging>jar</packaging>
   	    </configuration>
   	  </execution>
