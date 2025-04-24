@@ -148,4 +148,83 @@ java -jar target/contra-kernel-1.0-SNAPSHOT-jar-with-dependencies.jar
 Use [bkeeper][bkeeper] to browse the DB named *intervals*, and the
 table *intervalsV2*.
 
+# Notes for future work
+
+Current tables:
+
+**Intervals table**:
+
+| duration | quark | attribute | value | type |
+|----------|-------|-----------|-------|------|
+
+**Quark to attribute table**:
+
+| quark | attribute |
+|-------|-----------|
+
+Independently on the technology used,
+to create tables that are "easy to interpret",
+we need to decide the tables layout at priori,
+and then create them.
+Somehow we already do this with an the attribute tree,
+but we need more info e.g. 
+which one are containers, which ones are leaf, etc.
+
+An attribute tree similar to this:
+```
+ * |- CPUs
+ * |  |- <CPU number> -> CPU Status
+ * |  |  |- CURRENT_THREAD
+ * |  |  |- SOFT_IRQS
+ * |  |  |  |- <Soft IRQ number> -> Soft IRQ Status
+ * |  |  |- IRQS
+ * |  |  |  |- <IRQ number> -> IRQ Status
+ * |- IRQs / SOFT_IRQs
+ * |  |- <IRQ number> -> Aggregate Status
+ * |- THREADS
+ * |  |- <Thread number> -> Thread Status
+ * |  |  |- PPID -> The thread ID of the parent, can be a process or a thread
+ * |  |  |- EXEC_NAME
+ * |  |  |- PRIO
+ * |  |  |- SYSTEM_CALL
+ * |  |  |- CURRENT_CPU_RQ
+ * |  |  |- PID -> The process ID. If absent, the thread is a process
+ ```
+
+ Could generate the following tables:
+
+**CPUs Tables**:
+
+ | duration | CPU number | CPU status |
+ |----------|------------|------------|
+ | (0, 100) | 0          | 0          |
+ | (0, 100) | 1          | 1          |
+
+ | duration | CPU number | Current thread |
+ |----------|------------|----------------|
+ | (0, 100) | 0          | 0              |
+ | (0, 100) | 1          | 1              |
+
+ | duration | CPU number | Soft IRQ number | IRQ status |
+ |----------|------------|----------------|--|
+ | (0, 100) | 0          | 0              |  |
+ | (0, 100) | 1          | 1              |  |
+
+ | duration | CPU number | IRQ number | IRQ status |
+ |----------|------------|----------------|--|
+ | (0, 100) | 0          | 0              |  |
+ | (0, 100) | 1          | 1              |  |
+
+**IRQs Tables**:
+
+TBD
+
+**THREADS Tables**:
+
+TBD
+
+Ideas:
+
+- The "attribute tree description" could be passed to the db creator to setup tables, using the syntax we consider appropriate and easy to parse.
+
 [bkeeper]:https://github.com/beekeeper-studio/beekeeper-studio

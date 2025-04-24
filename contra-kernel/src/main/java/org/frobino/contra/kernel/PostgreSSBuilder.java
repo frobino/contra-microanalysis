@@ -31,7 +31,9 @@ public class PostgreSSBuilder extends PostgreSQLDatabase implements ITmfStateSys
   private static String INTERVALS_V2_TABLE_NAME = "intervalsV2";
   private int fNextQuark = 1;
   private long fLastUpdateTime = 0L;
+  // Quark to attribute mapping
   private BiMap<Integer, String> fQuarkAndAttribute = HashBiMap.create();
+  // Quark to ongoing state (no history)
   private Map<Integer, Pair<Long, ITmfStateValue>> fQuarkToOngoingState = new HashMap<>();
   private List<List<Object>> fValues = new ArrayList<>();
   private List<String> columns = Arrays.asList("duration", "quark", "attribute", "value", "type");
